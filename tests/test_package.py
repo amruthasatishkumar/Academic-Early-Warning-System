@@ -1,5 +1,7 @@
 import ast
 import copy
+from contextlib import redirect_stdout
+import io
 import json
 from pathlib import Path
 import shutil
@@ -131,6 +133,49 @@ class PackageTests(unittest.TestCase):
             self.assertEqual(values["SOURCE_CONFIG"]["intended_workspace"], source["intended_workspace"])
             self.assertEqual(values["SOURCE_CONFIG"]["intended_lakehouse"], source["intended_lakehouse"])
             self.assertEqual(values["SOURCE_CONFIG"]["experiment_name"], source["experiment_name"])
+
+    def test_explanation_controls_prefill_from_the_same_prediction(self):
+        import pandas as pd
+        records = pd.DataFrame({
+            "enrollment_id": [200, 100], "course_id": [2, 1], "predicted_class": ["fail", "pass"],
+            "p_excellent": [0.1, 0.1], "p_pass": [0.1, 0.7], "p_fail": [0.7, 0.1],
+            "p_withdrawn": [0.1, 0.1], "top_predicted_class_drivers": ["[]", "[]"],
+        })
+        notebook = json.loads(self.notebooks[1].read_text())
+        code = "".join(notebook["cells"][5]["source"])
+        values = {"VIEW": {"predictions": records}, "display": lambda data: None}
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exec(code, values)
+        self.assertEqual(values["ENROLLMENT_TO_EXPLAIN"], 100)
+        self.assertEqual(values["OUTCOME_TO_EXPLAIN"], "pass")
+        self.assertIn("ENROLLMENT_TO_EXPLAIN = 100", output.getvalue())
+        self.assertIn("OUTCOME_TO_EXPLAIN = 'pass'", output.getvalue())
+        alternate = code.replace(
+            "ENROLLMENT_TO_EXPLAIN = int(available_predictions.iloc[0].enrollment_id)",
+            "ENROLLMENT_TO_EXPLAIN = 200",
+        )
+        with redirect_stdout(io.StringIO()):
+            exec(alternate, values)
+        self.assertEqual(values["OUTCOME_TO_EXPLAIN"], "fail")
+
+    def test_empty_prediction_controls_fail_explicitly(self):
+        import pandas as pd
+        notebook = json.loads(self.notebooks[1].read_text())
+        code = "".join(notebook["cells"][5]["source"])
+        values = {"VIEW": {"predictions": pd.DataFrame({"enrollment_id": []})}, "display": lambda data: None}
+        with self.assertRaisesRegex(ValueError, "No current predictions"):
+            exec(code, values)
+
+    def test_invalid_outcome_cannot_silently_fall_back(self):
+        import pandas as pd
+        notebook = json.loads(self.notebooks[1].read_text())
+        code = "".join(notebook["cells"][6]["source"])
+        rows = pd.DataFrame({"enrollment_id": [100], "predicted_class": ["pass"]})
+        values = {"VIEW": {"current": rows, "predictions": rows}, "ENROLLMENT_TO_EXPLAIN": 100,
+                  "OUTCOME_TO_EXPLAIN": "", "OUTCOMES": ("excellent", "pass", "fail", "withdrawn")}
+        with self.assertRaisesRegex(ValueError, "OUTCOME_TO_EXPLAIN must be"):
+            exec(code, values)
 
     def test_write_once_preserves_and_rejects_conflicts(self):
         fs = MemoryFS()

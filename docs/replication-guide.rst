@@ -97,9 +97,19 @@ Manual Fabric setup and run
     same Lakehouse and run top to bottom. It reads ``current.json``, verifies
     immutable small/full snapshot counts and training provenance, loads that run's model,
     and checks all current probabilities and predicted classes.
-    Review global contributions for all four outcomes, then change
-    ``ENROLLMENT_TO_EXPLAIN`` to a displayed enrollment. Leave
-    ``OUTCOME_TO_EXPLAIN = None`` for its predicted-class explanation.
+    Review global contributions for all four outcomes. Block 6 automatically
+    fills and prints a valid enrollment ID and its predicted outcome, ready
+    for block 7. The enrollment ID originates in ``canvas.enrollments.id``;
+    it refers to a student-course enrollment, not the student alone.
+    ``predicted_class`` is the model's highest-probability outcome, not a
+    known future result.
+
+    To select another case, replace the ``ENROLLMENT_TO_EXPLAIN`` assignment
+    with an ID from the displayed predictions and rerun blocks 6 and 7.
+    The outcome will be filled from that enrollment's prediction. To explain
+    a different class, explicitly set ``OUTCOME_TO_EXPLAIN`` to
+    ``'excellent'``, ``'pass'``, ``'fail'`` or ``'withdrawn'`` in block 6.
+    This changes only the score being explained, not the model's prediction.
 
 13. Stop notebook sessions when finished. Apply your approved capacity,
     archive-retention and budget controls manually. Storage and previously

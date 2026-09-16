@@ -67,8 +67,11 @@ Capacity and storage charges are your responsibility.
 7. Wait for ``publication_completed``. Open ``02_explore_and_explain.ipynb``
    and run all cells. Expect the ``small`` profile, 583 current predictions,
    explanations for those predictions, and training feature contributions
-   for each of the four outcomes. You can select a displayed enrollment
-   using ``ENROLLMENT_TO_EXPLAIN``.
+   for each of the four outcomes. Block 6 automatically fills and prints
+   ``ENROLLMENT_TO_EXPLAIN`` and ``OUTCOME_TO_EXPLAIN`` using the first
+   current enrollment and its actual predicted outcome; no values are required
+   to run the example. To inspect a different enrollment, edit its assignment
+   in block 6 and rerun blocks 6 and 7.
 
 8. Stop notebook sessions and pause idle capacity according to your
    organization's policy. This repository does not perform those operations
