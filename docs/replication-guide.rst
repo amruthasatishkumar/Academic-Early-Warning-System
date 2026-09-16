@@ -74,8 +74,13 @@ Manual Fabric setup and run
 7. Create the configured Lakehouse **with schemas enabled** in that workspace.
    Choose Fabric Runtime 1.3: Python 3.11, Spark 3.5, Delta 3.2. Confirm
    NumPy 1.26.4, pandas 2.1.4, scikit-learn 1.2.2, PyArrow 14.0.2 and
-   MLflow 2.12.2. The guard refuses mismatched versions. Investigate runtime
-   changes rather than bypassing the guard or installing packages mid-session.
+   MLflow 2.12.2 is required only for notebooks 01 and 02, not table loading
+   in notebook 00. If MLflow package metadata is absent, its module version is
+   checked instead. Delta's Python and Spark classes must be available; Fabric
+   may provide them without ``delta-spark`` package metadata. In that case the
+   notebook reports the exact Delta version as unavailable, not a verified 3.2.
+   A present incompatible package version is still rejected. Investigate
+   runtime changes rather than installing packages mid-session.
 
 8. Extract ``sample-data/academic-early-warning-simulated-data.zip`` on your
    computer. In the target Lakehouse **Files**, choose **Upload folder**,
@@ -95,13 +100,25 @@ Manual Fabric setup and run
                manifest.json
                summary.json
 
-9. Import ``notebooks/00_load_lakehouse_tables.ipynb``. Attach the intended
-   Lakehouse as its default, in the configured workspace. In block 3 set
+9. Import ``notebooks/00_load_lakehouse_tables.ipynb`` into the configured
+   workspace. Its first cell sets the session's default Lakehouse by name::
+
+       %%configure
+       {
+         "defaultLakehouse": {
+           "name": "academic_early_warning"
+         }
+       }
+
+   Stop an existing notebook session before **Run all** so this first cell
+   takes effect. It selects an existing Lakehouse in the notebook's workspace;
+   it does not create a Lakehouse, publish identifiers, or change capacity.
+   In block 3 set
    ``SOURCE_FOLDER = 'Files/academic-early-warning-simulated-data'`` to the
    exact uploaded root. For a folder ending in ``-fixed``, use
    ``Files/academic-early-warning-simulated-data-fixed`` instead.
-   Use the existing Fabric-managed ``spark`` session and choose **Run all**.
-   No new SparkSession, installation or overwrite acknowledgment is needed.
+   Choose **Run all**. Fabric starts the configured session; the Python code
+   never creates a SparkSession or installs packages.
 
    The loader verifies runtime, target names, the release manifest hash,
    file bytes/checksums, schemas and rows. It preflights existing targets:
@@ -258,6 +275,8 @@ Custom names
   ``intended_workspace``, ``intended_lakehouse`` and ``experiment_name``.
   Keep the names consistent across notebooks and attach the correct default
   Lakehouse. Set ``SOURCE_FOLDER`` before its derived path is initialized.
+  In notebook 00, also update ``defaultLakehouse.name`` in the first
+  ``%%configure`` cell. Keep that cell first and stop the old session before rerunning.
 * Alternatively, edit ``config/simulation.json`` locally and rebuild all three
   notebooks with ``python tools\build_notebooks.py`` before importing them.
   Editing configuration files alone does not change an imported notebook.
@@ -267,6 +286,15 @@ Custom names
 Troubleshooting
 ---------------
 
+* **PackageNotFoundError for mlflow or delta-spark in notebook 00:** import the
+  updated loader and rerun all cells. It does not require MLflow and checks
+  Fabric-provided Delta classes without assuming pip package metadata exists.
+  Do not install those packages into the session just to satisfy the old guard.
+* **Session not associated with a Lakehouse:** adding it to the explorer is not
+  enough. In updated notebook 00, stop the session and run from its first
+  ``%%configure`` cell. For notebooks 01 and 02, right-click the intended
+  Lakehouse -> **Set as default lakehouse**, then stop/restart the session.
+  This does not require restarting or resizing the Fabric capacity.
 * **Folder not found or missing manifest:** set ``SOURCE_FOLDER`` to the exact
   uploaded root, including ``-fixed`` if present. Check for double nesting.
   Its direct children must include ``source_parquet``, ``features``,
@@ -312,6 +340,7 @@ Public product references
 
 * `Fabric Runtime 1.3 <https://learn.microsoft.com/fabric/data-engineering/runtime-1-3>`_
 * `Lakehouse schemas <https://learn.microsoft.com/fabric/data-engineering/lakehouse-schemas>`_
+* `Configure the default Lakehouse in code <https://learn.microsoft.com/fabric/data-engineering/author-execute-notebook#spark-session-configuration-magic-command>`_
 * `Canvas DAP documentation <https://developerdocs.instructure.com/services/dap>`_
 
 These references describe products, not successful execution in your tenant.

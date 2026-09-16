@@ -42,7 +42,8 @@ train a model for **Excellent, Pass, Fail and Withdrawn**.
 -------------------------------------
 
 * Import ``notebooks/00_load_lakehouse_tables.ipynb`` into the workspace.
-* Attach **academic_early_warning** as the notebook's **default Lakehouse**.
+* **Block 1 sets the default Lakehouse in code** to ``academic_early_warning``.
+* Stop any existing notebook session, then run from the top so this setting takes effect.
 * In **block 3**, set the path to your uploaded folder::
 
       SOURCE_FOLDER = 'Files/academic-early-warning-simulated-data'
@@ -55,6 +56,7 @@ train a model for **Excellent, Pass, Fail and Withdrawn**.
 **Only need the tables? Stop here.** Notebook 00 does not train a model or
 overwrite existing tables. Matching tables are skipped; conflicting tables
 cause an error.
+MLflow installation is not needed for notebook 00.
 
 5. Train the model with notebook 01 (optional)
 ----------------------------------------------

@@ -55,7 +55,7 @@ def create_input_tables(spark, config, plan):
 
 
 def load_folder_tables(spark, source_config, contract, source_folder, bundle_info):
-    root, _ = validate_session(spark, source_config)
+    root, _ = validate_session(spark, source_config, require_model=False)
     bundle = load_lakehouse_input(root, "folder", source_folder, bundle_info, source_config, contract)
     plan = table_plan(bundle, contract)
     print(json.dumps({"status": "folder_verified", "input_tables": len(plan), "writes_performed": False}))

@@ -94,7 +94,14 @@ class PackageTests(unittest.TestCase):
         for path in self.notebooks:
             notebook = json.loads(path.read_text())
             for cell in notebook["cells"]:
-                ast.parse("".join(cell["source"]))
+                code = "".join(cell["source"])
+                if code.startswith("%%configure\n"):
+                    self.assertTrue(path.name.startswith("00"))
+                    self.assertIs(cell, notebook["cells"][0])
+                    self.assertEqual(json.loads(code.split("\n", 1)[1]),
+                                     {"defaultLakehouse": {"name": self.source["intended_lakehouse"]}})
+                else:
+                    ast.parse(code)
                 self.assertEqual(cell["outputs"], [])
                 self.assertIsNone(cell["execution_count"])
             bundle = "".join(notebook["cells"][1]["source"])
@@ -155,7 +162,7 @@ class PackageTests(unittest.TestCase):
         self.assertIn("This notebook creates tables", introduction)
         self.assertIn("no second upload", introduction)
         loader = json.loads(self.notebooks[2].read_text())
-        introduction = "".join(loader["cells"][0]["source"])
+        introduction = "".join(loader["cells"][1]["source"])
         self.assertIn("Do not use Load to Tables", introduction)
         self.assertIn("Upload folder", introduction)
         self.assertIn("only one root folder", introduction)
@@ -172,6 +179,11 @@ class PackageTests(unittest.TestCase):
         paths = build_notebooks(config_dir=directory, output_dir=self.work / "configured")
         for path in paths:
             notebook = json.loads(path.read_text())
+            if path.name.startswith("00"):
+                configure = "".join(notebook["cells"][0]["source"])
+                self.assertTrue(configure.startswith("%%configure\n"))
+                self.assertEqual(json.loads(configure.split("\n", 1)[1]),
+                                 {"defaultLakehouse": {"name": source["intended_lakehouse"]}})
             values = {}
             exec("".join(notebook["cells"][2]["source"]), values)
             self.assertEqual(values["SOURCE_CONFIG"]["intended_workspace"], source["intended_workspace"])
@@ -181,6 +193,9 @@ class PackageTests(unittest.TestCase):
     def test_loader_config_and_table_only_call(self):
         notebook = json.loads(self.notebooks[2].read_text())
         self.assertEqual(len(notebook["cells"]), 5)
+        configure = "".join(notebook["cells"][0]["source"])
+        self.assertEqual(json.loads(configure.split("\n", 1)[1]),
+                         {"defaultLakehouse": {"name": "academic_early_warning"}})
         values = {}
         exec("".join(notebook["cells"][2]["source"]), values)
         info = json.loads((ROOT / "sample-data" / "bundle-info.json").read_text())

@@ -58,7 +58,10 @@ def module_bundle(root, names):
 
 
 def code_cell(text, number):
-    ast.parse(text)
+    if text.startswith("%%configure\n"):
+        json.loads(text.split("\n", 1)[1])
+    else:
+        ast.parse(text)
     return {"cell_type": "code", "id": f"code-{number}", "execution_count": None,
             "metadata": {}, "outputs": [], "source": text.splitlines(keepends=True)}
 
@@ -81,8 +84,10 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
         "# Extract the simulated-data ZIP on your computer. In Lakehouse Files choose Upload folder.\n"
         "# Upload the whole extracted folder, retaining all files and nesting, with only one root folder.\n"
         "# Expected: Files/academic-early-warning-simulated-data/{source_parquet/, features/, manifest.json, summary.json}\n"
-        "# Attach the configured schema-enabled default Lakehouse in its configured workspace.\n"
+        "# Cell 1 configures the default Lakehouse by name in this notebook's workspace.\n"
+        "# Stop an existing notebook session before Run all so cell 1 takes effect.\n"
         "# Runtime 1.3: Python 3.11, Spark 3.5, Delta 3.2. Use the existing spark session; no installs.\n"
+        "# MLflow is not required for this table-only loader. Delta uses Fabric-provided Python/Spark classes.\n"
         "# Run all once: verify the folder and create all 27 correctly named Delta input tables.\n"
         "# Identical existing tables are verified and skipped. Conflicts stop before new table creation.\n"
         "# No files or tables are deleted or overwritten. No training, gold outputs or publication.\n"
@@ -98,6 +103,10 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
         "import pandas as pd\n"
         "display(pd.DataFrame(table_results))\n",
     ]
+    load[1] = load[0] + load[1]
+    load[0] = "%%configure\n" + json.dumps({
+        "defaultLakehouse": {"name": source["intended_lakehouse"]},
+    }, indent=2) + "\n"
     build_settings = settings + (
         "MODEL_CONFIG = json.loads(" + repr(json.dumps(model)) + ")\n"
         "SOURCE_CONTRACT = json.loads(" + repr(json.dumps(contract)) + ")\n"

@@ -26,7 +26,9 @@ Expected Lakehouse layout before running the notebook:
       manifest.json
       summary.json
 
-Attach the configured default Lakehouse to notebook 00. In block 3, set:
+Notebook 00's first %%configure cell selects academic_early_warning by name
+in the notebook's workspace. Stop any existing session, then Run all from the
+top so the configuration takes effect. In block 3, set:
   SOURCE_FOLDER = 'Files/academic-early-warning-simulated-data'
 Use the exact uploaded root. For example, if the folder ends in "-fixed", use
   SOURCE_FOLDER = 'Files/academic-early-warning-simulated-data-fixed'
