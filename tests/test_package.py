@@ -116,6 +116,20 @@ class PackageTests(unittest.TestCase):
         info = json.loads((ROOT / "sample-data" / "bundle-info.json").read_text())
         self.assertIn(info["zip_sha256"], settings)
 
+    def test_quickstart_and_notebook_warn_against_manual_table_loading(self):
+        for path in (ROOT / "README.rst", ROOT / "docs" / "replication-guide.rst"):
+            content = path.read_text()
+            self.assertIn("Do not use Load to Tables for the replication Quickstart.", content)
+            self.assertIn("Upload files", content)
+            self.assertIn("Files/uploads", content)
+        dataset_readme = (ROOT / "sample-data" / "README.txt").read_text()
+        self.assertIn("REPLICATION QUICKSTART: DO NOT USE LOAD TO TABLES.", dataset_readme)
+        notebook = json.loads(self.notebooks[0].read_text())
+        introduction = "".join(notebook["cells"][0]["source"])
+        self.assertIn("Do not use Load to Tables", introduction)
+        self.assertIn("keep the inner simulated-data ZIP compressed", introduction)
+        self.assertIn("This notebook creates tables", introduction)
+
     def test_config_names_propagate_to_both_notebooks(self):
         directory = self.work / "configuration"
         directory.mkdir()

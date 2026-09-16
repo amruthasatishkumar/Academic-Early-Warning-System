@@ -13,6 +13,31 @@ Presentation assets: `vector diagram <assets/academic-early-warning-system.svg>`
 `presentation image <assets/academic-early-warning-system.png>`_ and
 `editable diagram <assets/academic-early-warning-system.excalidraw>`_.
 
+Start here: upload the ZIP, then run the notebooks
+--------------------------------------------------
+
+.. important::
+
+   **Do not use Load to Tables for the replication Quickstart.**
+   Extract only the outer repository ZIP. Upload the inner
+   ``academic-early-warning-simulated-data.zip`` **unchanged** under Lakehouse
+   **Files/uploads**. The first notebook creates the separate tables for you.
+   Do not load the extracted dataset folder or the ``features`` folder as
+   one table, and do not choose CSV or Parquet in a manual table-load wizard.
+
+The intended sequence is::
+
+    Extract repository ZIP on your computer
+        -> Upload the inner simulated-data ZIP to Lakehouse Files/uploads
+        -> Import and attach the two notebooks
+        -> First notebook: validate, then publish
+        -> Second notebook: explore the model and explanations
+
+If you already extracted or manually loaded some data, **do not delete it to
+start over**. Upload the original inner ZIP to the location above and follow
+the Quickstart. Review replacement scope before authorizing publication.
+An extracted folder does not substitute for the ZIP the notebook expects.
+
 Quickstart: replicate with the included dataset
 -----------------------------------------------
 
@@ -29,8 +54,8 @@ Capacity and storage charges are your responsibility.
    the **simulated-data ZIP** inside ``sample-data``.
    For this automated notebook quickstart, keep the inner file
    ``sample-data/academic-early-warning-simulated-data.zip`` **compressed**.
-   To inspect or load individual Parquet tables manually, follow
-   `Extract files for manual table loading`_ below instead.
+   Continue with the notebook workflow below; do not extract the inner ZIP
+   for this workflow.
 
 2. In your approved Fabric environment, create or select a capacity and create
    a workspace named **Academic Early Warning System**, assigned to that
@@ -39,13 +64,22 @@ Capacity and storage charges are your responsibility.
    **1.3 (Spark 3.5, Delta 3.2)**.
 
 3. Open that Lakehouse. Under **Files**, create a folder named ``uploads``.
-   Open the folder, choose **Upload files**, and upload the included data ZIP.
-   The exact resulting location must be::
+   Open the folder, choose **Upload files** (not **Load to Tables**), and
+   select the single ``academic-early-warning-simulated-data.zip`` file from
+   your computer's extracted repository ``sample-data`` directory.
+   Before moving on, confirm the uploaded item is a ZIP **file**, not an
+   extracted folder. The expected Lakehouse layout is::
 
-       Files/uploads/academic-early-warning-simulated-data.zip
+       Files/
+           uploads/
+               academic-early-warning-simulated-data.zip
 
-   Do not use "Load to tables" for the ZIP, and do not upload it to an unrelated
-   storage account. The build notebook verifies and unpacks its source files.
+   Its exact notebook path is
+   ``Files/uploads/academic-early-warning-simulated-data.zip``.
+
+   There is no Parquet/CSV selection or destination table name at this step.
+   Tables do not need to exist yet. The build notebook verifies the archive,
+   extracts its records and publishes each table separately.
 
 4. Import both notebooks from the repository's ``notebooks`` folder into the
    workspace. Attach **academic_early_warning** as the **default Lakehouse**
@@ -69,6 +103,11 @@ Capacity and storage charges are your responsibility.
    source records, uses the included precomputed point-in-time features,
    trains and calibrates one four-class model, and publishes its results.
    It does **not** run the synthetic generator in uploaded mode.
+
+   Success is the notebook message ``publication_completed``. You should then
+   see separate ``canvas``, ``canvas_logs``, ``sim_history``, ``sim_support``,
+   ``silver`` and ``gold`` schemas under **Tables**. A successful manual
+   Parquet load alone does not mean this replication step is complete.
 
 7. Wait for ``publication_completed``. Open ``02_explore_and_explain.ipynb``
    and run all cells. Expect the ``small`` profile, 583 current predictions,
@@ -120,8 +159,10 @@ exact hashes and counts. These files must stay paired with the notebooks.
 Extract files for manual table loading
 --------------------------------------
 
-This optional path lets you inspect the simulated records in Lakehouse tables.
-**It is not required for the automated notebook quickstart above.**
+**Advanced inspection only, not an alternative way to run the replication
+Quickstart.** Skip this section if your goal is to build the model using the
+included notebooks. It describes inspecting selected data as tables, not the
+model training/publication workflow.
 
 1. Extract the repository ZIP on your computer first. Then open ``sample-data``
    and use **Extract All** on ``academic-early-warning-simulated-data.zip``.

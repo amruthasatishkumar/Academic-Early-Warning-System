@@ -79,6 +79,10 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
     build = [
         "# Academic Early Warning System: build and publish\n"
         "# Synthetic course outcomes: Excellent, Pass, Fail, Withdrawn.\n"
+        "# START HERE: Do not use Load to Tables for the replication Quickstart.\n"
+        "# Extract the outer repository ZIP, but keep the inner simulated-data ZIP compressed.\n"
+        "# In the Lakehouse: Files -> uploads -> Upload files -> choose the inner ZIP file.\n"
+        "# Do not select Parquet/CSV or a destination table name. This notebook creates tables.\n"
         "# Attach the configured schema-enabled Lakehouse in its configured workspace.\n"
         "# Runtime 1.3: Python 3.11, Spark 3.5, Delta 3.2. No package installs here.\n"
         "# Upload sample-data/academic-early-warning-simulated-data.zip into Lakehouse Files/uploads.\n"
@@ -86,7 +90,8 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
         "# Default is read-only environment/data validation. Publication requires two explicit edits.\n"
         "# Terms 1-2 train; separate term-3 folds calibrate and select one logistic model.\n"
         "# Term 4 is a previously exposed synthetic diagnostic, never independent validation.\n"
-        "# No real Canvas adapter, accepted-model registration or automated student decisions.\n",
+        "# No real Canvas adapter, accepted-model registration or automated student decisions.\n"
+        "print('Upload academic-early-warning-simulated-data.zip unchanged to Files/uploads. Do not use Load to Tables.')\n",
         module_bundle(root, BUILD_MODULES),
         build_settings,
         "from aews.configuration import validate_configuration\n"

@@ -1,3 +1,4 @@
+import base64
 import copy
 import io
 import json
@@ -8,6 +9,7 @@ from unittest.mock import patch
 import zipfile
 
 import pandas as pd
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from aews.configuration import load_configuration
@@ -39,13 +41,25 @@ class DataBundleTests(unittest.TestCase):
             for name in archive.namelist():
                 if not name.endswith(".parquet"):
                     continue
-                schema = pq.ParquetFile(io.BytesIO(archive.read(name))).schema
+                parquet = pq.ParquetFile(io.BytesIO(archive.read(name)))
+                schema = parquet.schema
                 for i in range(len(schema)):
                     logical = str(schema.column(i).logical_type).lower()
                     self.assertNotIn("nanoseconds", logical, f"{name}:{schema.column(i).path}")
                     if "timestamp(" in logical:
                         timestamp_count += 1
                         self.assertIn("microseconds", logical)
+                metadata = parquet.metadata.metadata or {}
+                if b"ARROW:schema" in metadata:
+                    embedded = pa.ipc.read_schema(pa.BufferReader(base64.b64decode(metadata[b"ARROW:schema"])))
+                    for field in embedded:
+                        if pa.types.is_timestamp(field.type):
+                            self.assertEqual(field.type.unit, "us", f"{name}:{field.name}:embedded Arrow")
+                if b"pandas" in metadata:
+                    for column in json.loads(metadata[b"pandas"])["columns"]:
+                        field = parquet.schema_arrow.field(column["field_name"])
+                        if pa.types.is_timestamp(field.type):
+                            self.assertEqual(column["numpy_type"], "datetime64[us]", f"{name}:{field.name}:pandas")
         self.assertGreater(timestamp_count, 0)
 
     def test_upload_path_does_not_generate_records(self):

@@ -1,7 +1,9 @@
 ACADEMIC EARLY WARNING SYSTEM - INCLUDED SIMULATED DATA
 
-Start with the repository README.rst. It gives the complete self-service setup,
-upload, validation, publication and exploration steps.
+REPLICATION QUICKSTART: DO NOT USE LOAD TO TABLES.
+Extract only the outer repository ZIP. Upload the inner data ZIP unchanged to
+Lakehouse Files/uploads. The first notebook creates the separate tables.
+Start with the repository README.rst for the full self-service steps.
 
 File: academic-early-warning-simulated-data.zip
 Upload this ZIP unchanged to:
@@ -13,7 +15,14 @@ notebook workflow, do not unzip the inner simulated-data ZIP in the Lakehouse
 or use "Load to tables" on a ZIP. The build notebook verifies and unpacks it.
 No local Python is needed for that path.
 
-For manual Parquet inspection/loading instead:
+Expected Lakehouse layout before running the notebook:
+  Files/
+    uploads/
+      academic-early-warning-simulated-data.zip
+This is one ZIP file, not an extracted folder. No CSV/Parquet selection and
+no table name is needed when uploading the file.
+
+Advanced manual inspection only (skip for notebook replication):
 1. Extract this simulated-data ZIP on your computer using Extract All.
 2. Upload one table folder (with all its part-*.parquet files) to Lakehouse
    Files, then select that folder/file, Load to tables, and Parquet.
@@ -22,7 +31,8 @@ For manual Parquet inspection/loading instead:
    manifest.json and summary.json are metadata, not Parquet tables.
 4. Manual loading does not train or publish a model. The automated notebooks
    still require the original ZIP at the exact upload path above.
-The repository README has the complete instructions for both paths.
+Manual loading is not the replication workflow. Use the notebook Quickstart
+to train and publish the model and its explanations.
 
 The corrected data files use microsecond Parquet timestamps, not nanoseconds.
 If an old extracted feature file reports TIMESTAMP(NANOS,true), replace it

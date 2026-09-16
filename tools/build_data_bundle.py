@@ -1,5 +1,6 @@
 """Rebuild the included synthetic dataset; never connect to a cloud service."""
 import argparse
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -10,6 +11,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+import pyarrow as pa
 import pyarrow.parquet as pq
 from aews.configuration import load_configuration
 from aews.core.contract import dumps
@@ -49,9 +51,20 @@ def main():
                 item.update(rows=arrow.num_rows, schema=str(arrow.schema.remove_metadata()))
                 if name.startswith("source_parquet/"):
                     item["table"] = ".".join(name.split("/")[1:3])
-                physical = pq.ParquetFile(path).schema
-                if any("nanoseconds" in str(physical.column(i).logical_type).lower() for i in range(len(physical))):
-                    raise ValueError(f"Unsupported nanosecond Parquet timestamp in {name}.")
+                with pq.ParquetFile(path) as parquet:
+                    physical = parquet.schema
+                    if any("nanoseconds" in str(physical.column(i).logical_type).lower() for i in range(len(physical))):
+                        raise ValueError(f"Unsupported nanosecond Parquet timestamp in {name}.")
+                    metadata = parquet.metadata.metadata or {}
+                    if b"ARROW:schema" in metadata:
+                        embedded = pa.ipc.read_schema(pa.BufferReader(base64.b64decode(metadata[b"ARROW:schema"])))
+                        if any(pa.types.is_timestamp(field.type) and field.type.unit != "us" for field in embedded):
+                            raise ValueError(f"Non-microsecond embedded Arrow timestamp in {name}.")
+                    if b"pandas" in metadata:
+                        for column in json.loads(metadata[b"pandas"])["columns"]:
+                            field = parquet.schema_arrow.field(column["field_name"])
+                            if pa.types.is_timestamp(field.type) and column["numpy_type"] != "datetime64[us]":
+                                raise ValueError(f"Inconsistent pandas timestamp metadata in {name}:{field.name}.")
             members.append(item)
         manifest = {"purpose": PURPOSE, "version": 1, "synthetic": True,
                     "generation_settings": generation_settings(source),
@@ -74,7 +87,8 @@ def main():
                 "historical_features": len(historical), "current_features": len(current),
                 "expected_lakehouse_path": "Files/uploads/" + FILENAME,
                 "prepared_features_included": True, "pretrained_model_included": False,
-                "parquet_timestamp_unit": "microseconds"}
+                "parquet_timestamp_unit": "microseconds",
+                "parquet_timestamp_metadata": "microseconds"}
         loaded = load_bundle(pending, info, source, contract)
         if len(loaded.features) != len(features):
             raise RuntimeError("Bundle round trip changed the feature population.")

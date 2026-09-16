@@ -3,10 +3,10 @@
   "filename": "academic-early-warning-simulated-data.zip",
   "profile": "small",
   "synthetic": true,
-  "zip_sha256": "9077f7af382e8b6ab99304919228544035717d73b54014ecd7491f95042421cd",
-  "zip_bytes": 15645588,
+  "zip_sha256": "b162ff813446dbcffa17384d44cb59a25fa9574a2032b5609c625bb8040faf67",
+  "zip_bytes": 15645570,
   "member_count": 117,
-  "uncompressed_bytes": 24619793,
+  "uncompressed_bytes": 24619679,
   "seed": 271828,
   "counts": {
     "accounts": 1,
@@ -28,5 +28,6 @@
   "expected_lakehouse_path": "Files/uploads/academic-early-warning-simulated-data.zip",
   "prepared_features_included": true,
   "pretrained_model_included": false,
-  "parquet_timestamp_unit": "microseconds"
+  "parquet_timestamp_unit": "microseconds",
+  "parquet_timestamp_metadata": "microseconds"
 }

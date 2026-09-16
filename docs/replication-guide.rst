@@ -4,15 +4,16 @@ Replication guide
 Start here
 ----------
 
-Follow the root ``README.rst`` Quickstart to upload the included dataset and
-run the prebuilt notebooks. It does not require local data generation or a
-local Python installation when using the default names.
+**Do not use Load to Tables for the replication Quickstart.** Follow the root
+``README.rst`` to upload the inner dataset ZIP unchanged under
+``Files/uploads`` and run the prebuilt notebooks. The first notebook creates
+the separate tables. No manual file-type or destination-table selection is
+required. No local generation or Python installation is needed with default names.
 
 Extract the downloaded repository ZIP first. Keep the simulated-data ZIP inside
-``sample-data`` compressed for the automated notebook path. For manual
-``Load to tables`` inspection, extract the inner data ZIP too and load only
-one table's Parquet parts at a time. The root README's **Extract files for
-manual table loading** section explains this alternative and its limits.
+``sample-data`` compressed for the notebook path. The root README's manual
+table-loading section is advanced data inspection only, not a replacement
+for the model replication workflow.
 
 This guide adds local development instructions and details about publication,
 preservation and adapting the target environment.
@@ -71,6 +72,8 @@ Manual Fabric setup and run
 
 8. Create ``Files/uploads`` in the target Lakehouse and upload the still-zipped
    ``sample-data/academic-early-warning-simulated-data.zip`` there.
+   Choose **Upload files**, not **Load to Tables**. Confirm the uploaded item
+   is one ZIP file at the exact path, not a folder of extracted Parquet files.
    Manually import ``notebooks/01_build_and_publish.ipynb`` and
    ``notebooks/02_explore_and_explain.ipynb``. Attach the intended Lakehouse
    as the default for both notebooks. They must run in that same workspace.
