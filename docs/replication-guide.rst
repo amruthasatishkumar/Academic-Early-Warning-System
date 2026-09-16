@@ -5,21 +5,22 @@ Start here
 ----------
 
 **Do not use Load to Tables for the replication Quickstart.** Follow the root
-``README.rst`` to upload the inner dataset ZIP unchanged under
-``Files/uploads`` and run the prebuilt notebooks. The first notebook creates
-the separate tables. No manual file-type or destination-table selection is
-required. No local generation or Python installation is needed with default names.
+``README.rst`` to extract the simulated-data ZIP, choose **Files > Upload
+folder**, and run ``00_load_lakehouse_tables.ipynb`` once. It creates all 27
+input tables without a per-table wizard. No local generation or Python
+installation is needed with default names.
 
-Extract the downloaded repository ZIP first. Keep the simulated-data ZIP inside
-``sample-data`` compressed for the notebook path. The root README's manual
-table-loading section is advanced data inspection only, not a replacement
-for the model replication workflow.
+Keep all files and nesting, with only one dataset root. If your folder is
+already uploaded, set ``SOURCE_FOLDER`` to its exact root and reuse it.
+Do not upload a ZIP again. Notebook 00 creates or verifies tables only.
+Notebook 01 optionally trains and publishes using that same folder; notebook
+02 requires that completed model publication, not just the imported tables.
 
-For manual inspection, use the root README's
+For the mapping applied automatically by notebook 00, see the root README's
 `Parquet file-to-table names <../README.rst#parquet-file-to-table-names>`_
 table. It maps all 115 Parquet files to 27 input tables with separate
-**Schema** and **New table name** values. Keep filenames unchanged and load
-all parts from a single table folder together, not as separate tables.
+**Schema** and **New table name** values. Keep filenames unchanged; all parts
+from a single table folder form one table.
 
 This guide adds local development instructions and details about publication,
 preservation and adapting the target environment.
@@ -40,7 +41,7 @@ Optional local prerequisites
    local Fabric Spark service. No Python 3.10 equivalence is implied.
 
 3. Edit ``config/simulation.json`` to your chosen workspace, Lakehouse and
-   experiment names. Both notebooks use the same configuration. Keep the
+   experiment names. All three notebooks use the same configuration. Keep the
    provided seed and label logic when reproducing the synthetic example.
    Do not add credentials or private resource identifiers.
 
@@ -57,7 +58,7 @@ Optional local prerequisites
    a new ignored output directory. Failed class coverage is an error, not
    permission to search for a more favorable seed.
 
-5. Confirm both notebooks contain no executed output. They embed the required
+5. Confirm all three notebooks contain no executed output. They embed the required
    source modules and configuration; cloud imports do not depend on this
    local folder. Editing a Python file alone does not update a cloud notebook.
    Always rebuild and reimport after edits.
@@ -76,40 +77,74 @@ Manual Fabric setup and run
    MLflow 2.12.2. The guard refuses mismatched versions. Investigate runtime
    changes rather than bypassing the guard or installing packages mid-session.
 
-8. Create ``Files/uploads`` in the target Lakehouse and upload the still-zipped
-   ``sample-data/academic-early-warning-simulated-data.zip`` there.
-   Choose **Upload files**, not **Load to Tables**. Confirm the uploaded item
-   is one ZIP file at the exact path, not a folder of extracted Parquet files.
-   Manually import ``notebooks/01_build_and_publish.ipynb`` and
-   ``notebooks/02_explore_and_explain.ipynb``. Attach the intended Lakehouse
-   as the default for both notebooks. They must run in that same workspace.
-   No tenant-specific metadata or default-Lakehouse identifier is prefilled.
+8. Extract ``sample-data/academic-early-warning-simulated-data.zip`` on your
+   computer. In the target Lakehouse **Files**, choose **Upload folder**,
+   not **Load to Tables**, and select the complete extracted folder.
+   Retain all files and nesting. Confirm the root is not doubly nested::
 
-9. Open the first notebook, start the existing Fabric-managed Spark session,
-   and run top to bottom with the default ``RUN_MODE = 'validate'``.
-   Leave ``INPUT_MODE = 'uploaded'`` and
-   ``ALLOW_DEMO_TABLE_REPLACEMENT = False``. Validation checks package
-   versions, active session, workspace and default-Lakehouse names, the Files
-   mount, exact ``workspace.Lakehouse.dbo`` namespace, and the uploaded ZIP's
-   release hash, member checksums, source/feature schemas and counts. It creates no
-   tables or model experiment. A mismatch must be corrected before proceeding.
+       Files/
+           academic-early-warning-simulated-data/
+               source_parquet/
+                   canvas/
+                   canvas_logs/
+                   sim_history/
+                   sim_support/
+               features/
+                   historical.parquet
+                   current.parquet
+               manifest.json
+               summary.json
 
-10. Review the scope below. Only for the intended synthetic development
+9. Import ``notebooks/00_load_lakehouse_tables.ipynb``. Attach the intended
+   Lakehouse as its default, in the configured workspace. In block 3 set
+   ``SOURCE_FOLDER = 'Files/academic-early-warning-simulated-data'`` to the
+   exact uploaded root. For a folder ending in ``-fixed``, use
+   ``Files/academic-early-warning-simulated-data-fixed`` instead.
+   Use the existing Fabric-managed ``spark`` session and choose **Run all**.
+   No new SparkSession, installation or overwrite acknowledgment is needed.
+
+   The loader verifies runtime, target names, the release manifest hash,
+   file bytes/checksums, schemas and rows. It preflights existing targets:
+   identical tables are verified and skipped; any mismatch stops before
+   new tables are created. It reports each ``schema.table``, ``created`` or
+   ``already_matches``, and its verified Spark row count. ``tables_loaded``
+   appears only after all **25 source/history/support and two silver feature
+   tables** are complete. No files or tables are overwritten or deleted.
+   It does not train, create gold placeholders, or publish a model.
+   If you only need tables, skip to step 14.
+
+10. **Optional model workflow:** import ``notebooks/01_build_and_publish.ipynb``
+    and ``notebooks/02_explore_and_explain.ipynb`` with the same default
+    Lakehouse. They must run in the configured workspace. In notebook 01
+    leave ``INPUT_MODE = 'folder'``, ``RUN_MODE = 'validate'`` and
+    ``ALLOW_DEMO_TABLE_REPLACEMENT = False``. Set ``SOURCE_FOLDER`` to the
+    same uploaded root used in notebook 00. No second upload is needed.
+    Run top to bottom. Validation checks package versions, active session,
+    target names, Files mount, namespace, file integrity and source/feature
+    schemas, counts and boundaries. It writes no tables or model experiment.
+    Correct mismatches before proceeding.
+
+11. Review the scope below. Only for the intended synthetic development
     Lakehouse, set ``RUN_MODE = 'publish'`` and
-    ``ALLOW_DEMO_TABLE_REPLACEMENT = True``. Keep ``INPUT_MODE = 'uploaded'``
+    ``ALLOW_DEMO_TABLE_REPLACEMENT = True``. Keep ``INPUT_MODE = 'folder'``
     and registration disabled. The dataset profile is truthfully recorded as
     ``small``. No source generation or feature recomputation is performed:
     the prepared features shipped with the source histories are used.
     Run top to bottom with a single writer.
+    Notebook 01 still archives and verifies the 27 named input tables before
+    replacing them, including tables just imported by notebook 00, as well
+    as existing named gold outputs. Notebook 00's non-overwriting behavior
+    does not change the publication replacement policy.
     This is a separate, explicitly authorized cloud workload.
 
-11. Wait for ``publication_completed``. Review the printed actual source
+12. Wait for ``publication_completed``. Review the printed actual source
     counts, source assertions, unknown-label exclusions, calibration/decision
     sample sizes, per-class metrics and the current manifest. Do not invent
     accuracy expectations or alter outcomes to make a chart look better.
 
-12. Open the second notebook only after the writer has finished. Attach the
-    same Lakehouse and run top to bottom. It reads ``current.json``, verifies
+13. Open notebook 02 only after notebook 01's publication has finished.
+    ``tables_loaded`` from notebook 00 alone does not satisfy this requirement.
+    Attach the same Lakehouse and run top to bottom. It reads ``current.json``, verifies
     immutable small/full snapshot counts and training provenance, loads that run's model,
     and checks all current probabilities and predicted classes.
     Review global contributions for all four outcomes. Block 6 automatically
@@ -126,32 +161,59 @@ Manual Fabric setup and run
     ``'excellent'``, ``'pass'``, ``'fail'`` or ``'withdrawn'`` in block 6.
     This changes only the score being explained, not the model's prediction.
 
-13. Stop notebook sessions when finished. Apply your approved capacity,
+14. Stop notebook sessions when finished. Apply your approved capacity,
     archive-retention and budget controls manually. Storage and previously
     consumed compute can remain billable. This starter does not pause capacity
     or implement a scheduled operations service.
 
+ZIP upload alternative
+----------------------
+
+Keep the inner simulated-data ZIP compressed and unchanged if you prefer
+this supported alternative. Create ``Files/uploads``, choose **Upload files**
+and upload ``sample-data/academic-early-warning-simulated-data.zip`` there::
+
+    Files/
+        uploads/
+            academic-early-warning-simulated-data.zip
+
+Skip notebook 00. Set ``INPUT_MODE = 'uploaded'`` in notebook 01.
+``UPLOAD_PATH`` then uses ``BUNDLE_INFO['expected_lakehouse_path']``.
+The notebook verifies the ZIP's release checksum and included files, then
+uses its prepared features. Follow the same validation, explicit publication
+authorization and exploration steps above. Do not upload the outer repository
+ZIP or recompress the data ZIP. Folder mode does not require this upload.
+
 Generate a larger dataset instead
 ---------------------------------
 
-Set ``INPUT_MODE = 'generate'`` in the first notebook's configuration cell.
+Set ``INPUT_MODE = 'generate'`` in notebook 01's configuration cell.
 The supplied logic selects the full profile (5,000 learners). Run validate,
 then explicitly authorize publish as above. This path generates source
-history and features rather than reading the included ZIP. It uses the same
-publication and exploration workflow but takes longer and uses more compute.
-The two input paths are alternatives; do not start them concurrently.
+history and features rather than reading the included folder or ZIP. It uses
+the same publication and exploration workflow but takes longer and uses more compute.
+The three input modes are alternatives; do not start them concurrently.
 
 Rebuild the included ZIP locally only when needed::
 
     .\.venv\Scripts\python.exe tools\build_data_bundle.py --replace
     .\.venv\Scripts\python.exe tools\build_notebooks.py
 
-The builder writes new checksums into ``sample-data/bundle-info.json``.
+The builder writes ZIP and manifest checksums into ``sample-data/bundle-info.json``.
 Notebooks embed those checksums, so data and notebooks must be rebuilt together.
 Do not distribute an independently modified ZIP with old notebooks.
 
 Replacement, preservation and recovery
 --------------------------------------
+
+Notebook 00 is a non-overwriting import. Existing table conflicts are reported
+before any new tables are created. If a later operation fails, some new
+tables can remain; rerunning verifies and skips matching tables. Preserve
+the error and review a mismatch, or use a separate empty development Lakehouse.
+Do not delete existing data just to pass the guard. Use one writer at a time.
+
+The remainder of this section describes notebook 01's authorized publication,
+not notebook 00. Its archive behavior applies even after a table-only import.
 
 The source contract names the ``canvas`` and ``canvas_logs`` tables.
 Each mutable source table has a ``sim_history.<table>_revisions`` table.
@@ -199,3 +261,6 @@ Public product references
 These references describe products, not successful execution in your tenant.
 Authentication, resource provisioning and customer approval are deliberately
 outside this portable starter.
+The new portable folder workflow has not been run end to end in Fabric.
+Local checks do not validate cloud permissions, catalog behavior, capacity
+or MLflow integration, and are not a cloud execution claim.

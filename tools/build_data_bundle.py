@@ -81,6 +81,7 @@ def main():
                     archive.writestr(entry, path.read_bytes())
         info = {"purpose": PURPOSE, "filename": FILENAME, "profile": "small", "synthetic": True,
                 "zip_sha256": sha256_file(pending), "zip_bytes": pending.stat().st_size,
+                "manifest_sha256": sha256_file(stage / "manifest.json"),
                 "member_count": len(members) + 1,
                 "uncompressed_bytes": sum(p.stat().st_size for p in stage.rglob("*") if p.is_file()),
                 "seed": source["seed"], "counts": summary["observed_source_counts"],

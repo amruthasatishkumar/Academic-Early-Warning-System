@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def _spark_schema(arrow_schema):
+def _spark_schema(arrow_schema, nullable=False):
     import pyarrow as pa
     from pyspark.sql.types import (ArrayType, BooleanType, DoubleType, IntegerType,
                                    LongType, StringType, StructField, StructType, TimestampType)
@@ -19,12 +19,12 @@ def _spark_schema(arrow_schema):
         elif pa.types.is_timestamp(t):
             spark_type = TimestampType()
         elif pa.types.is_list(t):
-            spark_type = ArrayType(StringType(), containsNull=False)
+            spark_type = ArrayType(StringType(), containsNull=nullable)
         elif pa.types.is_string(t) or pa.types.is_large_string(t):
             spark_type = StringType()
         else:
             raise TypeError(f"Unsupported explicit Arrow-to-Spark type: {t}")
-        fields.append(StructField(field.name, spark_type, field.nullable))
+        fields.append(StructField(field.name, spark_type, field.nullable or nullable))
     return StructType(fields)
 
 
@@ -55,9 +55,11 @@ def _pandas_to_spark(spark, data):
         if pd.api.types.is_datetime64_any_dtype(copied[name].dtype):
             copied[name] = pd.to_datetime(copied[name], utc=True).dt.floor("us")
     arrow = pa.Table.from_pandas(copied, schema=schema, preserve_index=False, safe=True)
+    return _arrow_to_spark(spark, arrow)
+
+
+def _arrow_to_spark(spark, arrow, nullable=False):
     records = []
     for row in arrow.to_pylist():
         records.append(tuple(v.to_pydatetime() if isinstance(v, pd.Timestamp) else v for v in row.values()))
-    return spark.createDataFrame(records, schema=_spark_schema(schema))
-
-
+    return spark.createDataFrame(records, schema=_spark_schema(arrow.schema, nullable=nullable))

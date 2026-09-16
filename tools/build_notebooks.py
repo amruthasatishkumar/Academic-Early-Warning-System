@@ -19,6 +19,11 @@ BUILD_MODULES = READ_MODULES + (
     "aews.core.execution", "aews.configuration", "aews.model", "aews.model.modeling",
     "aews.parquet", "aews.execution", "aews.data_bundle", "aews.spark_tables", "aews.storage", "aews.fabric",
 )
+LOAD_MODULES = (
+    "aews", "aews.core", "aews.core.contract", "aews.core.simulation", "aews.core.features",
+    "aews.core.execution", "aews.configuration", "aews.parquet", "aews.data_bundle",
+    "aews.runtime", "aews.spark_tables", "aews.storage", "aews.table_import",
+)
 
 
 def module_bundle(root, names):
@@ -65,14 +70,43 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
     output_dir = Path(output_dir or root / "notebooks")
     output_dir.mkdir(parents=True, exist_ok=True)
     settings = "import json\nSOURCE_CONFIG = json.loads(" + repr(json.dumps(source)) + ")\n"
+    folder_setting = (
+        "# Set this to the exact uploaded root, including '-fixed' if that is your folder name.\n"
+        "# It must directly contain source_parquet/, features/, manifest.json and summary.json.\n"
+        "SOURCE_FOLDER = 'Files/academic-early-warning-simulated-data'\n"
+    )
+    load = [
+        "# Academic Early Warning System: load all Lakehouse input tables\n"
+        "# Do not use Load to Tables for the replication Quickstart.\n"
+        "# Extract the simulated-data ZIP on your computer. In Lakehouse Files choose Upload folder.\n"
+        "# Upload the whole extracted folder, retaining all files and nesting, with only one root folder.\n"
+        "# Expected: Files/academic-early-warning-simulated-data/{source_parquet/, features/, manifest.json, summary.json}\n"
+        "# Attach the configured schema-enabled default Lakehouse in its configured workspace.\n"
+        "# Runtime 1.3: Python 3.11, Spark 3.5, Delta 3.2. Use the existing spark session; no installs.\n"
+        "# Run all once: verify the folder and create all 27 correctly named Delta input tables.\n"
+        "# Identical existing tables are verified and skipped. Conflicts stop before new table creation.\n"
+        "# No files or tables are deleted or overwritten. No training, gold outputs or publication.\n"
+        "# Optional: run 01 to train and publish, then 02 to explore that completed publication.\n"
+        "print('Upload the extracted folder once to Files, set SOURCE_FOLDER, then Run all. No per-table wizard.')\n",
+        module_bundle(root, LOAD_MODULES),
+        settings
+        + "SOURCE_CONTRACT = json.loads(" + repr(json.dumps(contract)) + ")\n"
+        + "BUNDLE_INFO = json.loads(" + repr(json.dumps(bundle_info)) + ")\n"
+        + folder_setting,
+        "from aews.table_import import load_folder_tables\n"
+        "table_results = load_folder_tables(spark, SOURCE_CONFIG, SOURCE_CONTRACT, SOURCE_FOLDER, BUNDLE_INFO)\n",
+        "import pandas as pd\n"
+        "display(pd.DataFrame(table_results))\n",
+    ]
     build_settings = settings + (
         "MODEL_CONFIG = json.loads(" + repr(json.dumps(model)) + ")\n"
         "SOURCE_CONTRACT = json.loads(" + repr(json.dumps(contract)) + ")\n"
         "CODE_FINGERPRINT = " + repr(code_hash(root)) + "\n"
         "BUNDLE_INFO = json.loads(" + repr(json.dumps(bundle_info)) + ")\n"
-        "INPUT_MODE = 'uploaded'  # Included dataset; 'generate' builds the larger full dataset.\n"
-        "UPLOAD_PATH = BUNDLE_INFO['expected_lakehouse_path']\n"
-        "SOURCE_CONFIG['mode'] = 'small' if INPUT_MODE == 'uploaded' else 'full'\n"
+        "INPUT_MODE = 'folder'  # 'folder': extracted data; 'uploaded': ZIP; 'generate': larger full dataset.\n"
+        + folder_setting
+        + "UPLOAD_PATH = SOURCE_FOLDER if INPUT_MODE == 'folder' else BUNDLE_INFO['expected_lakehouse_path']\n"
+        "SOURCE_CONFIG['mode'] = 'full' if INPUT_MODE == 'generate' else 'small'\n"
         "RUN_MODE = 'validate'  # Change to 'publish' only after validation and scope review.\n"
         "ALLOW_DEMO_TABLE_REPLACEMENT = False\n"
     )
@@ -80,18 +114,21 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
         "# Academic Early Warning System: build and publish\n"
         "# Synthetic course outcomes: Excellent, Pass, Fail, Withdrawn.\n"
         "# START HERE: Do not use Load to Tables for the replication Quickstart.\n"
-        "# Extract the outer repository ZIP, but keep the inner simulated-data ZIP compressed.\n"
-        "# In the Lakehouse: Files -> uploads -> Upload files -> choose the inner ZIP file.\n"
-        "# Do not select Parquet/CSV or a destination table name. This notebook creates tables.\n"
+        "# Use the folder already uploaded for 00_load_lakehouse_tables.ipynb; no second upload.\n"
+        "# Or extract the simulated-data ZIP locally, then Files -> Upload folder, retaining all nesting.\n"
+        "# Set SOURCE_FOLDER to its exact root, including '-fixed' if used. Avoid a doubly nested root.\n"
+        "# No per-table wizard. This notebook creates tables as part of guarded model publication.\n"
+        "# ZIP alternative: keep the inner simulated-data ZIP compressed, Files -> uploads -> Upload files.\n"
+        "# For that alternative set INPUT_MODE = 'uploaded'; the ZIP path comes from BUNDLE_INFO.\n"
         "# Attach the configured schema-enabled Lakehouse in its configured workspace.\n"
         "# Runtime 1.3: Python 3.11, Spark 3.5, Delta 3.2. No package installs here.\n"
-        "# Upload sample-data/academic-early-warning-simulated-data.zip into Lakehouse Files/uploads.\n"
-        "# Prepared early features are included; uploaded mode does not regenerate source records.\n"
+        "# Prepared early features are included; folder/uploaded modes do not regenerate source records.\n"
         "# Default is read-only environment/data validation. Publication requires two explicit edits.\n"
+        "# Publication archives and replaces the named inputs (including tables loaded by 00) and gold outputs.\n"
         "# Terms 1-2 train; separate term-3 folds calibrate and select one logistic model.\n"
         "# Term 4 is a previously exposed synthetic diagnostic, never independent validation.\n"
         "# No real Canvas adapter, accepted-model registration or automated student decisions.\n"
-        "print('Upload academic-early-warning-simulated-data.zip unchanged to Files/uploads. Do not use Load to Tables.')\n",
+        "print('Use your uploaded extracted folder. Do not use Load to Tables. Validate before authorizing publication.')\n",
         module_bundle(root, BUILD_MODULES),
         build_settings,
         "from aews.configuration import validate_configuration\n"
@@ -100,12 +137,12 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
         "validate_configuration(SOURCE_CONFIG, MODEL_CONFIG, SOURCE_CONTRACT)\n"
         "if RUN_MODE == 'validate':\n"
         "    _, runtime_versions = validate_session(spark, SOURCE_CONFIG)\n"
-        "    if INPUT_MODE == 'uploaded':\n"
-        "        DATASET = validate_uploaded_data(spark, SOURCE_CONFIG, MODEL_CONFIG, SOURCE_CONTRACT, UPLOAD_PATH, BUNDLE_INFO)\n"
+        "    if INPUT_MODE in ('folder', 'uploaded'):\n"
+        "        DATASET = validate_uploaded_data(spark, SOURCE_CONFIG, MODEL_CONFIG, SOURCE_CONTRACT, UPLOAD_PATH, BUNDLE_INFO, INPUT_MODE)\n"
         "        print({'dataset': 'verified', 'profile': 'small', 'prepared_feature_rows': len(DATASET.features),\n"
         "               'source_counts': DATASET.summary['observed_source_counts']})\n"
         "    elif INPUT_MODE != 'generate':\n"
-        "        raise ValueError('INPUT_MODE must be uploaded or generate.')\n"
+        "        raise ValueError('INPUT_MODE must be folder, uploaded or generate.')\n"
         "    print({'validation': 'passed', 'runtime': runtime_versions, 'writes_performed': False})\n"
         "elif RUN_MODE == 'publish':\n"
         "    PUBLICATION = run_fabric(spark, SOURCE_CONFIG, MODEL_CONFIG, SOURCE_CONTRACT,\n"
@@ -122,6 +159,7 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
     explore = [
         "# Academic Early Warning System: explore and explain\n"
         "# READ ONLY. This notebook never fits, publishes, registers or contacts students.\n"
+        "# Requires publication_completed from 01; tables_loaded from 00 alone is not a model publication.\n"
         "# It follows current.json to immutable uploaded-small or generated-full snapshots.\n"
         "# Use only your trusted workspace's own MLflow model artifacts.\n"
         "# Contributions are underlying linear class-score units before calibration,\n"
@@ -198,7 +236,8 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
         "print('All terms reconstruct the underlying score. Top-three drivers alone do not.')\n",
     ]
     paths = []
-    for filename, cells in (("01_build_and_publish.ipynb", build), ("02_explore_and_explain.ipynb", explore)):
+    for filename, cells in (("01_build_and_publish.ipynb", build), ("02_explore_and_explain.ipynb", explore),
+                            ("00_load_lakehouse_tables.ipynb", load)):
         notebook = {
             "nbformat": 4, "nbformat_minor": 5,
             "metadata": {
@@ -215,7 +254,7 @@ def build_notebooks(root=ROOT, config_dir=None, output_dir=None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build two self-contained importable Fabric notebooks without cloud access.")
+    parser = argparse.ArgumentParser(description="Build three self-contained importable Fabric notebooks without cloud access.")
     parser.add_argument("--config-dir", type=Path, default=ROOT / "config")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "notebooks")
     args = parser.parse_args()

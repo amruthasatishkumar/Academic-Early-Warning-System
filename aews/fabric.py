@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from aews.configuration import validate_configuration
-from aews.data_bundle import load_bundle
+from aews.data_bundle import load_lakehouse_input
 from aews.core.contract import dumps
 from aews.core.execution import ParquetSourceSink, SUPPORT_SCHEMA, arrow_schema, prepare
 from aews.core.features import feature_contract
@@ -29,14 +29,10 @@ def runtime_preflight(spark, source_config, model_config, contract, allow_replac
     return validate_session(spark, source_config)
 
 
-def validate_uploaded_data(spark, source_config, model_config, contract, bundle_path, bundle_info):
+def validate_uploaded_data(spark, source_config, model_config, contract, bundle_path, bundle_info, input_mode="uploaded"):
     validate_configuration(source_config, model_config, contract)
     root, versions = validate_session(spark, source_config)
-    if bundle_path != bundle_info["expected_lakehouse_path"]:
-        raise ValueError("Upload the included archive to the exact documented Files path.")
-    if not bundle_path.startswith("Files/uploads/") or ".." in bundle_path or "\\" in bundle_path:
-        raise ValueError("Invalid uploaded dataset location.")
-    return load_bundle(root / bundle_path.removeprefix("Files/"), bundle_info, source_config, contract)
+    return load_lakehouse_input(root, input_mode, bundle_path, bundle_info, source_config, contract)
 
 
 def prepare_input(source_config, contract, staging, bundle=None):
@@ -73,8 +69,10 @@ def archive_existing(spark, fs, config, contract, archive_root):
 
 def publish_sources(spark, config, contract, source_path, expected_counts):
     for namespace, table, schema in source_targets(contract):
-        data = spark.read.schema(_spark_schema(schema)).parquet(source_path + "/" + namespace + "/" + table)
-        data = spark.createDataFrame(data.rdd, schema=_spark_schema(schema))
+        # Source values are already contract-validated; match Delta's nullable read-back schema.
+        schema = _spark_schema(schema, nullable=True)
+        data = spark.read.schema(schema).parquet(source_path + "/" + namespace + "/" + table)
+        data = spark.createDataFrame(data.rdd, schema=schema)
         target = qualified(config, namespace, table)
         data.write.format("delta").mode("overwrite").option("overwriteSchema", "true").saveAsTable(target)
         actual = spark.table(target)
@@ -126,22 +124,22 @@ def log_model(result, source, model_config, features, summary, versions):
 
 def run_fabric(spark, source_config, model_config, contract, code_fingerprint, allow_replacement=False,
                input_mode="generate", bundle_path=None, bundle_info=None):
-    if input_mode not in ("generate", "uploaded"):
-        raise ValueError("INPUT_MODE must be uploaded or generate.")
+    if input_mode not in ("generate", "uploaded", "folder"):
+        raise ValueError("INPUT_MODE must be folder, uploaded or generate.")
     source_config = dict(source_config)
-    if input_mode == "uploaded":
+    if input_mode != "generate":
         source_config["mode"] = "small"
     root, versions = runtime_preflight(spark, source_config, model_config, contract, allow_replacement,
-                                      uploaded=input_mode == "uploaded")
+                                      uploaded=input_mode != "generate")
     import notebookutils
     import mlflow
     mlflow.autolog(disable=True)
     fs = notebookutils.fs
     bundle = None
-    if input_mode == "uploaded":
-        if bundle_info is None or bundle_path != bundle_info["expected_lakehouse_path"]:
-            raise ValueError("Use the included data ZIP and documented upload path.")
-        bundle = load_bundle(root / bundle_path.removeprefix("Files/"), bundle_info, source_config, contract)
+    if input_mode != "generate":
+        if bundle_info is None:
+            raise ValueError("Use the included dataset and matching notebook metadata.")
+        bundle = load_lakehouse_input(root, input_mode, bundle_path, bundle_info, source_config, contract)
     publication_id = pd.Timestamp.now(tz="UTC").strftime("%Y%m%dT%H%M%S%f") + "-" + uuid.uuid4().hex[:12]
     source_id = hashlib.sha256(dumps({
         "config": source_config, "code": code_fingerprint, "contract": contract,
@@ -182,7 +180,9 @@ def run_fabric(spark, source_config, model_config, contract, code_fingerprint, a
         require_equivalent(frame, spark.table(target), name)
     manifest = {
         "purpose": PURPOSE, "publication_state": "complete", "source_profile": source_config["mode"],
-        "input_mode": input_mode, "input_bundle_sha256": bundle_info["zip_sha256"] if bundle is not None else None,
+        "input_mode": input_mode,
+        "input_bundle_sha256": bundle.manifest.get("verified_zip_sha256") if bundle is not None else None,
+        "input_manifest_sha256": bundle.manifest["verified_manifest_sha256"] if bundle is not None else None,
         "model_version": result.version, "mlflow_run_id": run_id, "registered": False,
         "schemas": {"silver": "silver", "gold": "gold"}, "source_dataset_version": source_id,
         "source_data_path": source_path, "code_sha256": code_fingerprint,

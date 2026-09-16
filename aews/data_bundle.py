@@ -68,6 +68,83 @@ def safe_member_name(name):
     return name
 
 
+class _DirectoryArchive:
+    """Expose a bounded extracted dataset through the same reader as a ZIP."""
+
+    def __init__(self, root):
+        self.root = Path(root)
+        if not self.root.is_dir() or self.root.is_symlink():
+            raise ValueError("The dataset must be a real extracted folder.")
+        self.entries = {}
+        for path in self.root.rglob("*"):
+            if path.is_symlink():
+                raise ValueError("Symbolic links are not allowed in the dataset folder.")
+            if path.is_dir():
+                continue
+            if not path.is_file():
+                raise ValueError("Unexpected non-file dataset entry.")
+            name = safe_member_name(path.relative_to(self.root).as_posix())
+            entry = zipfile.ZipInfo(name)
+            entry.file_size = path.stat().st_size
+            self.entries[name] = entry
+            if len(self.entries) > MAX_FILES:
+                raise ValueError("Too many files in the dataset folder.")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def infolist(self):
+        return list(self.entries.values())
+
+    def namelist(self):
+        return list(self.entries)
+
+    def getinfo(self, name):
+        return self.entries[safe_member_name(name)]
+
+    def open(self, name):
+        entry = self.getinfo(name)
+        path = self.root
+        for part in ("", *PurePosixPath(name).parts):
+            path = path / part
+            if path.is_symlink():
+                raise ValueError("Dataset path changed to a symbolic link.")
+        if not path.resolve().is_relative_to(self.root.resolve()) or path.stat().st_size != entry.file_size:
+            raise ValueError("Dataset file changed after folder inspection.")
+        return path.open("rb")
+
+    def read(self, name):
+        if self.getinfo(name).file_size > MAX_MEMBER:
+            raise ValueError("Dataset member exceeds the uncompressed-size limit.")
+        with self.open(name) as handle:
+            raw = handle.read(MAX_MEMBER + 1)
+        if len(raw) != self.getinfo(name).file_size:
+            raise ValueError("Dataset file size changed while reading.")
+        return raw
+
+
+def load_lakehouse_input(root, input_mode, input_path, info, config, contract):
+    if input_mode not in ("uploaded", "folder"):
+        raise ValueError("Choose uploaded for a ZIP or folder for an extracted dataset.")
+    if not isinstance(input_path, str) or not input_path.startswith("Files/"):
+        raise ValueError("The input path must start with Files/ in the default Lakehouse.")
+    safe_member_name(input_path)
+    root = Path(root).resolve()
+    path = root.joinpath(*PurePosixPath(input_path).parts[1:])
+    if not path.resolve().is_relative_to(root) or path.resolve() == root:
+        raise ValueError("Dataset path must be a child of the default Lakehouse Files folder.")
+    if input_mode == "uploaded" and input_path != info["expected_lakehouse_path"]:
+        raise ValueError("Upload the included archive to the exact documented Files path.")
+    if input_mode == "folder" and not path.is_dir():
+        raise FileNotFoundError("Upload the extracted dataset folder and set SOURCE_FOLDER to its Files path.")
+    if input_mode == "uploaded" and not path.is_file():
+        raise FileNotFoundError("Upload the included data ZIP to Files/uploads first.")
+    return load_bundle(path, info, config, contract)
+
+
 def validate_feature_frames(historical, current):
     for name, data, labels in (("historical", historical, LABEL_FIELDS), ("current", current, [])):
         if set(data.columns) != set(FEATURES + FEATURE_METADATA + labels):
@@ -104,15 +181,19 @@ class DatasetBundle:
     manifest: dict
     features: pd.DataFrame
     summary: dict
+    tables: dict
 
     def extract_sources(self, destination):
         destination = Path(destination)
         if destination.exists():
             raise FileExistsError("Dataset extraction requires a fresh staging directory.")
-        if sha256_file(self.archive) != self.manifest["verified_zip_sha256"]:
+        folder = self.manifest["verified_input_kind"] == "folder"
+        if not folder and sha256_file(self.archive) != self.manifest["verified_zip_sha256"]:
             raise ValueError("The uploaded archive changed after validation.")
-        destination.mkdir(parents=True)
-        with zipfile.ZipFile(self.archive) as archive:
+        with (_DirectoryArchive(self.archive) if folder else zipfile.ZipFile(self.archive)) as archive:
+            if hashlib.sha256(archive.read("manifest.json")).hexdigest() != self.manifest["verified_manifest_sha256"]:
+                raise ValueError("The input manifest changed after validation.")
+            destination.mkdir(parents=True)
             for member in self.manifest["members"]:
                 name = member["path"]
                 if not name.startswith("source_parquet/"):
@@ -128,16 +209,19 @@ class DatasetBundle:
 
 def load_bundle(path, info, config, contract):
     path = Path(path)
-    if not path.is_file():
-        raise FileNotFoundError("Upload the included data ZIP to the configured Lakehouse Files path first.")
-    if path.stat().st_size > MAX_COMPRESSED or path.stat().st_size != info["zip_bytes"]:
-        raise ValueError("Dataset ZIP size does not match the included release.")
-    digest = sha256_file(path)
-    if not re.fullmatch(r"[0-9a-f]{64}", info["zip_sha256"]) or digest != info["zip_sha256"]:
-        raise ValueError("Dataset ZIP checksum mismatch. Use the data ZIP shipped with these notebooks.")
+    folder = path.is_dir()
+    digest = None
+    if not folder:
+        if not path.is_file():
+            raise FileNotFoundError("Upload the included ZIP or extracted dataset folder first.")
+        if path.stat().st_size > MAX_COMPRESSED or path.stat().st_size != info["zip_bytes"]:
+            raise ValueError("Dataset ZIP size does not match the included release.")
+        digest = sha256_file(path)
+        if not re.fullmatch(r"[0-9a-f]{64}", info["zip_sha256"]) or digest != info["zip_sha256"]:
+            raise ValueError("Dataset ZIP checksum mismatch. Use the data ZIP shipped with these notebooks.")
     schemas = source_schemas(contract)
     tables, all_members = {}, []
-    with zipfile.ZipFile(path) as archive:
+    with (_DirectoryArchive(path) if folder else zipfile.ZipFile(path)) as archive:
         entries = archive.infolist()
         if len(entries) > MAX_FILES or len({e.filename for e in entries}) != len(entries):
             raise ValueError("Too many archive entries or duplicate member names.")
@@ -151,7 +235,12 @@ def load_bundle(path, info, config, contract):
             raise ValueError("Dataset exceeds the total uncompressed-size limit.")
         if "manifest.json" not in archive.namelist() or archive.getinfo("manifest.json").file_size > 1024 * 1024:
             raise ValueError("Dataset manifest is absent or oversized.")
-        manifest = json.loads(archive.read("manifest.json"))
+        manifest_bytes = archive.read("manifest.json")
+        manifest_digest = hashlib.sha256(manifest_bytes).hexdigest()
+        if folder and (not re.fullmatch(r"[0-9a-f]{64}", info.get("manifest_sha256", "")) or
+                       manifest_digest != info["manifest_sha256"]):
+            raise ValueError("Dataset manifest checksum mismatch. Use the extracted data shipped with this notebook.")
+        manifest = json.loads(manifest_bytes)
         if manifest.get("purpose") != PURPOSE or manifest.get("version") != 1 or manifest.get("synthetic") is not True:
             raise ValueError("Wrong dataset type.")
         if manifest["generation_settings"] != generation_settings(config):
@@ -223,7 +312,11 @@ def load_bundle(path, info, config, contract):
     features["label_available_at"] = pd.to_datetime(features.label_available_at, utc=True)
     if len(features) != summary["feature_snapshots"]:
         raise ValueError("Prepared feature count mismatch.")
-    manifest["verified_zip_sha256"] = digest
-    summary["input_mode"] = "uploaded_verified_synthetic_bundle"
+    manifest["verified_input_kind"] = "folder" if folder else "uploaded"
+    manifest["verified_manifest_sha256"] = manifest_digest
+    if digest is not None:
+        manifest["verified_zip_sha256"] = digest
+    summary["input_mode"] = "folder_verified_synthetic_bundle" if folder else "uploaded_verified_synthetic_bundle"
     summary["prepared_features"] = "Computed from the included synthetic history during dataset packaging, not regenerated on upload."
-    return DatasetBundle(path, manifest, features, summary)
+    return DatasetBundle(path, manifest, features, summary,
+                         {name: pa.concat_tables(parts) for name, parts in tables.items()})
