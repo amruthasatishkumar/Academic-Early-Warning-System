@@ -8,6 +8,12 @@ Follow the root ``README.rst`` Quickstart to upload the included dataset and
 run the prebuilt notebooks. It does not require local data generation or a
 local Python installation when using the default names.
 
+Extract the downloaded repository ZIP first. Keep the simulated-data ZIP inside
+``sample-data`` compressed for the automated notebook path. For manual
+``Load to tables`` inspection, extract the inner data ZIP too and load only
+one table's Parquet parts at a time. The root README's **Extract files for
+manual table loading** section explains this alternative and its limits.
+
 This guide adds local development instructions and details about publication,
 preservation and adapting the target environment.
 

@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from aews.configuration import validate_configuration
+from aews.parquet import read_frame, write_frame
 from aews.core.contract import dumps
 from aews.core.execution import ParquetSourceSink, evaluation_frame, prepare, quality_frame
 from aews.core.features import feature_contract
@@ -95,8 +96,8 @@ def run_local(root, source_config, model_config, contract, output, write_sources
         schema, table = name.split(".")
         target = output / schema
         target.mkdir(exist_ok=True)
-        data.to_parquet(target / (table + ".parquet"), index=False)
-        pd.testing.assert_frame_equal(pd.read_parquet(target / (table + ".parquet")), data)
+        write_frame(data, target / (table + ".parquet"))
+        pd.testing.assert_frame_equal(read_frame(target / (table + ".parquet")), data)
     artifacts = output / "model_artifacts" / result.version
     artifacts.mkdir(parents=True)
     importance.to_csv(artifacts / "training_contributions.csv", index=False)

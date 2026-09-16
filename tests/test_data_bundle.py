@@ -1,4 +1,5 @@
 import copy
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -7,6 +8,7 @@ from unittest.mock import patch
 import zipfile
 
 import pandas as pd
+import pyarrow.parquet as pq
 
 from aews.configuration import load_configuration
 from aews.data_bundle import FILENAME, load_bundle, safe_member_name, sha256_file, validate_feature_frames
@@ -30,6 +32,21 @@ class DataBundleTests(unittest.TestCase):
         self.assertEqual(len(self.bundle.features.loc[self.bundle.features.term == 5]), 583)
         self.assertTrue(self.bundle.features.loc[self.bundle.features.term == 5, "label"].isna().all())
         self.assertFalse(any("model.pkl" in m["path"] for m in self.bundle.manifest["members"]))
+
+    def test_every_parquet_timestamp_is_spark_compatible(self):
+        timestamp_count = 0
+        with zipfile.ZipFile(self.path) as archive:
+            for name in archive.namelist():
+                if not name.endswith(".parquet"):
+                    continue
+                schema = pq.ParquetFile(io.BytesIO(archive.read(name))).schema
+                for i in range(len(schema)):
+                    logical = str(schema.column(i).logical_type).lower()
+                    self.assertNotIn("nanoseconds", logical, f"{name}:{schema.column(i).path}")
+                    if "timestamp(" in logical:
+                        timestamp_count += 1
+                        self.assertIn("microseconds", logical)
+        self.assertGreater(timestamp_count, 0)
 
     def test_upload_path_does_not_generate_records(self):
         with tempfile.TemporaryDirectory() as temporary, patch("aews.fabric.prepare", side_effect=AssertionError("No generation")):

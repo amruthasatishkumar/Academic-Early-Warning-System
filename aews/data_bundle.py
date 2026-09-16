@@ -17,6 +17,7 @@ import pyarrow.parquet as pq
 from aews.core.contract import dumps, frame, validate_table
 from aews.core.execution import SUPPORT_SCHEMA, arrow_schema
 from aews.core.features import CLASSES, FEATURES, FEATURE_VERSION, PARTITIONS
+from aews.parquet import normalize_timestamp_units
 
 FILENAME = "academic-early-warning-simulated-data.zip"
 PURPOSE = "academic_early_warning_synthetic_input"
@@ -208,8 +209,8 @@ def load_bundle(path, info, config, contract):
         validate_table(table, data, contract, references)
         if len(data) != summary["observed_source_counts"][table]:
             raise ValueError("Source count differs from the verified generation summary.")
-    historical = tables["features/historical.parquet"][0].to_pandas()
-    current = tables["features/current.parquet"][0].to_pandas()
+    historical = normalize_timestamp_units(tables["features/historical.parquet"][0].to_pandas())
+    current = normalize_timestamp_units(tables["features/current.parquet"][0].to_pandas())
     validate_feature_frames(historical, current)
     enrollment_ids = set(references["enrollments"].id)
     if not (set(historical.enrollment_id) | set(current.enrollment_id)) <= enrollment_ids:

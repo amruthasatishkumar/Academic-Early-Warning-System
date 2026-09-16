@@ -22,9 +22,15 @@ default resource names. You do need access to Microsoft Fabric, a capacity
 with available quota, and permission to create a workspace and Lakehouse.
 Capacity and storage charges are your responsibility.
 
-1. Download or clone the complete repository. If you downloaded the repository
-   ZIP, extract it on your computer. Keep the inner data ZIP **compressed**:
-   ``sample-data/academic-early-warning-simulated-data.zip``.
+1. Download or clone the complete repository. If you downloaded a ZIP, use
+   **Extract All** on your computer and open the extracted repository folder.
+   You should see ``README.rst``, ``notebooks`` and ``sample-data``.
+   There are two different ZIPs: the **repository ZIP** you just extracted and
+   the **simulated-data ZIP** inside ``sample-data``.
+   For this automated notebook quickstart, keep the inner file
+   ``sample-data/academic-early-warning-simulated-data.zip`` **compressed**.
+   To inspect or load individual Parquet tables manually, follow
+   `Extract files for manual table loading`_ below instead.
 
 2. In your approved Fabric environment, create or select a capacity and create
    a workspace named **Academic Early Warning System**, assigned to that
@@ -110,6 +116,55 @@ preparation, not during upload. Training and predictions are computed in your
 environment. Current-term feature files contain no future labels. See
 ``sample-data/README.txt`` and ``sample-data/bundle-info.json`` for provenance,
 exact hashes and counts. These files must stay paired with the notebooks.
+
+Extract files for manual table loading
+--------------------------------------
+
+This optional path lets you inspect the simulated records in Lakehouse tables.
+**It is not required for the automated notebook quickstart above.**
+
+1. Extract the repository ZIP on your computer first. Then open ``sample-data``
+   and use **Extract All** on ``academic-early-warning-simulated-data.zip``.
+   Keep the original inner ZIP too; the build notebook still expects that file.
+
+2. Open the extracted dataset folder. Its table layout is::
+
+       source_parquet/
+           canvas/users/part-00.parquet
+           canvas/submissions/part-01.parquet ... part-05.parquet
+           canvas_logs/web_logs/part-01.parquet ... part-05.parquet
+           sim_history/<table>_revisions/part-01.parquet ...
+           sim_support/course_withdrawal_events/part-01.parquet ...
+       features/
+           historical.parquet
+           current.parquet
+       manifest.json
+       summary.json
+
+3. Upload the selected extracted files or table folder under Lakehouse
+   **Files**, preserving a separate folder for each table. Select that
+   table's Parquet file or folder and choose **Load to tables**, select
+   **Parquet**, and give the destination table a meaningful name.
+   If several ``part-*.parquet`` files belong to one table, load all of those
+   parts together, not just the first term.
+
+4. **Do not select the dataset root, ``source_parquet/canvas`` or the entire
+   ``features`` folder as one table.** Those locations contain different
+   schemas. Do not include ``manifest.json`` or ``summary.json`` as Parquet.
+   Load ``features/historical.parquet`` and ``features/current.parquet``
+   separately; only historical features contain outcome labels.
+
+5. Manual loading creates data tables only. It does not train a model or
+   create the publication manifest required by the exploration notebook.
+   To replicate the complete model workflow, upload the original unmodified
+   simulated-data ZIP to ``Files/uploads`` and follow the Quickstart.
+   Its publish step archives and replaces the named demo tables, so use only
+   a synthetic development Lakehouse, not production data.
+
+All timestamp columns in the corrected bundle are stored as Parquet
+**microseconds**, which avoids the unsupported ``TIMESTAMP(NANOS,true)``
+encoding. Keep current data and current notebooks together so their checksums
+match; do not recompress the data ZIP for the automated path.
 
 What it demonstrates
 --------------------
@@ -291,6 +346,12 @@ single version-matched input ZIP under ``sample-data``; keep it included.
 Troubleshooting
 ---------------
 
+* **Illegal Parquet type: INT64 (TIMESTAMP(NANOS,true)):** an earlier bundle
+  encoded timestamps in the two prepared feature files at nanosecond precision.
+  Use the corrected simulated-data ZIP and matching build notebook from the
+  same repository revision. Replace the previously uploaded affected files
+  in your own demo folder. Selecting Parquet in the UI cannot change the
+  timestamp encoding already inside a file.
 * **ZIP not found:** upload the inner dataset ZIP to ``Files/uploads``, not
   the outer repository ZIP. Names are case-sensitive.
 * **Checksum mismatch:** use the data ZIP shipped with these notebooks.

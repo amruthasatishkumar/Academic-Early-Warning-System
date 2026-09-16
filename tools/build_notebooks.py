@@ -17,7 +17,7 @@ READ_MODULES = (
 BUILD_MODULES = READ_MODULES + (
     "aews.core", "aews.core.contract", "aews.core.simulation", "aews.core.features",
     "aews.core.execution", "aews.configuration", "aews.model", "aews.model.modeling",
-    "aews.execution", "aews.data_bundle", "aews.spark_tables", "aews.storage", "aews.fabric",
+    "aews.parquet", "aews.execution", "aews.data_bundle", "aews.spark_tables", "aews.storage", "aews.fabric",
 )
 
 

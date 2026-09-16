@@ -8,9 +8,25 @@ Upload this ZIP unchanged to:
   Files/uploads/academic-early-warning-simulated-data.zip
 inside your configured, schema-enabled Fabric Lakehouse.
 
-Do not upload the outer repository ZIP, unzip this dataset manually in the
-Lakehouse, or use "Load to tables" on the ZIP. The build notebook checks and
-unpacks the exact included archive. No local Python is needed for this path.
+Extract the outer repository ZIP on your computer first. For the automated
+notebook workflow, do not unzip the inner simulated-data ZIP in the Lakehouse
+or use "Load to tables" on a ZIP. The build notebook verifies and unpacks it.
+No local Python is needed for that path.
+
+For manual Parquet inspection/loading instead:
+1. Extract this simulated-data ZIP on your computer using Extract All.
+2. Upload one table folder (with all its part-*.parquet files) to Lakehouse
+   Files, then select that folder/file, Load to tables, and Parquet.
+3. Never combine different source-table folders into one table. Load
+   features/historical.parquet and features/current.parquet separately.
+   manifest.json and summary.json are metadata, not Parquet tables.
+4. Manual loading does not train or publish a model. The automated notebooks
+   still require the original ZIP at the exact upload path above.
+The repository README has the complete instructions for both paths.
+
+The corrected data files use microsecond Parquet timestamps, not nanoseconds.
+If an old extracted feature file reports TIMESTAMP(NANOS,true), replace it
+with the corrected file and use the matching notebooks for automated loading.
 
 The data is entirely fictional, generated with seed 271828 using the small
 profile in this repository. It includes:

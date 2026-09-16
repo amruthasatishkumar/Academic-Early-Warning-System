@@ -16,6 +16,7 @@ from aews.core.contract import dumps
 from aews.core.execution import ParquetSourceSink, prepare
 from aews.execution import split_features
 from aews.data_bundle import FILENAME, PURPOSE, generation_settings, load_bundle, sha256_file
+from aews.parquet import write_frame
 
 
 def main():
@@ -34,8 +35,8 @@ def main():
         features, summary = prepare(source, contract, ParquetSourceSink(stage / "source_parquet", contract))
         historical, current = split_features(features)
         (stage / "features").mkdir()
-        historical.to_parquet(stage / "features" / "historical.parquet", index=False)
-        current.to_parquet(stage / "features" / "current.parquet", index=False)
+        write_frame(historical, stage / "features" / "historical.parquet")
+        write_frame(current, stage / "features" / "current.parquet")
         (stage / "summary.json").write_text(dumps(summary), encoding="ascii")
         members = []
         for path in sorted(stage.rglob("*")):
@@ -48,6 +49,9 @@ def main():
                 item.update(rows=arrow.num_rows, schema=str(arrow.schema.remove_metadata()))
                 if name.startswith("source_parquet/"):
                     item["table"] = ".".join(name.split("/")[1:3])
+                physical = pq.ParquetFile(path).schema
+                if any("nanoseconds" in str(physical.column(i).logical_type).lower() for i in range(len(physical))):
+                    raise ValueError(f"Unsupported nanosecond Parquet timestamp in {name}.")
             members.append(item)
         manifest = {"purpose": PURPOSE, "version": 1, "synthetic": True,
                     "generation_settings": generation_settings(source),
@@ -69,7 +73,8 @@ def main():
                 "seed": source["seed"], "counts": summary["observed_source_counts"],
                 "historical_features": len(historical), "current_features": len(current),
                 "expected_lakehouse_path": "Files/uploads/" + FILENAME,
-                "prepared_features_included": True, "pretrained_model_included": False}
+                "prepared_features_included": True, "pretrained_model_included": False,
+                "parquet_timestamp_unit": "microseconds"}
         loaded = load_bundle(pending, info, source, contract)
         if len(loaded.features) != len(features):
             raise RuntimeError("Bundle round trip changed the feature population.")
