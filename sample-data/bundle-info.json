@@ -1,0 +1,31 @@
+{
+  "purpose": "academic_early_warning_synthetic_input",
+  "filename": "academic-early-warning-simulated-data.zip",
+  "profile": "small",
+  "synthetic": true,
+  "zip_sha256": "f59d70aa4320e3d414f6af4fea0933cf3f4078baa5e2de54b55904ca6ed89d6a",
+  "zip_bytes": 15645606,
+  "member_count": 117,
+  "uncompressed_bytes": 24619786,
+  "seed": 271828,
+  "counts": {
+    "accounts": 1,
+    "users": 408,
+    "enrollment_terms": 5,
+    "courses": 40,
+    "course_sections": 120,
+    "enrollments": 3040,
+    "assignment_groups": 40,
+    "assignments": 800,
+    "assignment_overrides": 4611,
+    "assignment_override_students": 4611,
+    "submissions": 60000,
+    "scores": 2400,
+    "web_logs": 111217
+  },
+  "historical_features": 2336,
+  "current_features": 583,
+  "expected_lakehouse_path": "Files/uploads/academic-early-warning-simulated-data.zip",
+  "prepared_features_included": true,
+  "pretrained_model_included": false
+}

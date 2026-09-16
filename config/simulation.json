@@ -1,0 +1,16 @@
+{
+  "seed": 271828,
+  "mode": "small",
+  "profiles": {
+    "small": {"students": 400, "courses_per_term": 8, "enrollments_per_course": 75, "assignments_per_course": 20, "sections_per_course": 3},
+    "full": {"students": 5000, "courses_per_term": 80, "enrollments_per_course": 150, "assignments_per_course": 20, "sections_per_course": 3}
+  },
+  "terms": 5,
+  "term_days": 84,
+  "cutoff_weeks": [4],
+  "current_week": 4,
+  "intended_workspace": "Academic Early Warning System",
+  "intended_lakehouse": "academic_early_warning",
+  "experiment_name": "Academic Early Warning System Training",
+  "notice": "Synthetic course outcomes only. No real Canvas ingestion or accepted model."
+}

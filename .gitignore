@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.py[cod]
+outputs/
+*.parquet
+*.pkl
+*.pickle
+*.joblib
+mlruns/
+.env
+.env.*
+*.local.json
+.azure/
+.dataprojects/
+*.log
+*.zip
+!sample-data/academic-early-warning-simulated-data.zip

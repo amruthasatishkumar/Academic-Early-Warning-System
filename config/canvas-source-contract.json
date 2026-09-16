@@ -1,0 +1,1453 @@
+{
+  "version": "canvas-selected-projection-1",
+  "public_sources": {
+    "canvas": {
+      "url": "https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/dataset-canvas.md",
+      "sha256": "f76419a3bad3b0515c584953c47cc6b4274ad3fa96ea031df2719fea20dc2d46"
+    },
+    "types": {
+      "url": "https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/dataset-canvas/dataset-canvas-types.md",
+      "sha256": "bf91631fc1001cc3a13c61ee001598da938d4cfc9bd4fe89c07433407ce806a2"
+    },
+    "canvas_logs": {
+      "url": "https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/dataset-canvaslogs.md",
+      "sha256": "ebe0106e785048bfe998fe1aaf48c2dba64e431021cd38ef771efbf5d5256f7a"
+    }
+  },
+  "scope": "Selected projection only, not full Canvas replication. All omitted fields and all other tables are not simulated.",
+  "tables": {
+    "accounts": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "name": {
+          "published_type": "Annotated[str, MaxLength(255)] | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": 255,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[accounts__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.accounts__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "active",
+            "deleted",
+            "suspended"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "users": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "name": {
+          "published_type": "Annotated[str, MaxLength(255)] | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": 255,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[users__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.users__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "creation_pending",
+            "deleted",
+            "pending_approval",
+            "pre_registered",
+            "registered"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "enrollment_terms": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "name": {
+          "published_type": "Annotated[str, MaxLength(255)] | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": 255,
+          "format": null
+        },
+        "start_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "end_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[enrollment_terms__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.enrollment_terms__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "active",
+            "deleted"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "courses": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "name": {
+          "published_type": "Annotated[str, MaxLength(255)] | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": 255,
+          "format": null
+        },
+        "account_id": {
+          "published_type": "[accounts](#dap_schemas.canvas.accounts)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "accounts",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "enrollment_term_id": {
+          "published_type": "[enrollment_terms](#dap_schemas.canvas.enrollment_terms)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "enrollment_terms",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "start_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "conclude_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[courses__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.courses__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "created",
+            "claimed",
+            "available",
+            "completed",
+            "deleted"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "course_sections": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "name": {
+          "published_type": "Annotated[str, MaxLength(255)]",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": 255,
+          "format": null
+        },
+        "course_id": {
+          "published_type": "[courses](#dap_schemas.canvas.courses)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "courses",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "enrollment_term_id": {
+          "published_type": "[enrollment_terms](#dap_schemas.canvas.enrollment_terms) | None",
+          "type": "int64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": "enrollment_terms",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "start_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "end_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[course_sections__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.course_sections__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "active",
+            "deleted"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "enrollments": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "user_id": {
+          "published_type": "[users](#dap_schemas.canvas.users)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "users",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "course_id": {
+          "published_type": "[courses](#dap_schemas.canvas.courses)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "courses",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "course_section_id": {
+          "published_type": "[course_sections](#dap_schemas.canvas.course_sections)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "course_sections",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "type": {
+          "published_type": "[enrollments__type](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.enrollments__type)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "StudentEnrollment",
+            "TeacherEnrollment",
+            "TaEnrollment",
+            "DesignerEnrollment",
+            "ObserverEnrollment",
+            "StudentViewEnrollment"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "start_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "end_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[enrollments__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.enrollments__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "creation_pending",
+            "invited",
+            "rejected",
+            "active",
+            "inactive",
+            "completed",
+            "deleted"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "assignment_groups": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "name": {
+          "published_type": "Annotated[str, MaxLength(255)] | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": 255,
+          "format": null
+        },
+        "context_id": {
+          "published_type": "[courses](#dap_schemas.canvas.courses)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "courses",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "context_type": {
+          "published_type": "[assignment_groups__context_type](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignment_groups__context_type)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "Course"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "group_weight": {
+          "published_type": "float64 | None",
+          "type": "float64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[assignment_groups__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignment_groups__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "available",
+            "deleted",
+            "active"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "assignments": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "title": {
+          "published_type": "Annotated[str, MaxLength(255)] | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": 255,
+          "format": null
+        },
+        "context_id": {
+          "published_type": "[courses](#dap_schemas.canvas.courses)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "courses",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "context_type": {
+          "published_type": "[assignments__context_type](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignments__context_type)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "Course"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "assignment_group_id": {
+          "published_type": "[assignment_groups](#dap_schemas.canvas.assignment_groups) | None",
+          "type": "int64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": "assignment_groups",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "due_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "unlock_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "points_possible": {
+          "published_type": "float64 | None",
+          "type": "float64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "submission_types": {
+          "published_type": "Annotated[list[[assignments__submission_types](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignments__submission_types)], SpecialConversion()] | None",
+          "type": "array<string>",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "discussion_topic",
+            "online_quiz",
+            "on_paper",
+            "none",
+            "external_tool",
+            "online",
+            "online_text_entry",
+            "online_url",
+            "online_upload",
+            "media_recording",
+            "not_graded",
+            "wiki_page",
+            "student_annotation",
+            "default_external_tool"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "grading_type": {
+          "published_type": "[assignments__grading_type](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignments__grading_type) | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "gpa_scale",
+            "letter_grade",
+            "not_graded",
+            "pass_fail",
+            "percent",
+            "points",
+            "default"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "omit_from_final_grade": {
+          "published_type": "bool",
+          "type": "bool",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[assignments__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignments__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "unpublished",
+            "published",
+            "deleted",
+            "duplicating",
+            "fail_to_import",
+            "failed_to_duplicate",
+            "failed_to_import",
+            "failed_to_migrate",
+            "importing",
+            "migrating",
+            "outcome_alignment_cloning",
+            "failed_to_clone_outcome_alignment"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "assignment_overrides": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "assignment_id": {
+          "published_type": "[assignments](#dap_schemas.canvas.assignments) | None",
+          "type": "int64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": "assignments",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "set_type": {
+          "published_type": "[assignment_overrides__set_type](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignment_overrides__set_type) | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "Group",
+            "CourseSection",
+            "ADHOC",
+            "Noop",
+            "Course"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "set_id": {
+          "published_type": "None | [groups](#dap_schemas.canvas.groups) | [course_sections](#dap_schemas.canvas.course_sections)",
+          "type": "int64",
+          "nullable": true,
+          "primary_key": true,
+          "reference": "course_sections",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "due_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "due_at_overridden": {
+          "published_type": "bool",
+          "type": "bool",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "title": {
+          "published_type": "Annotated[str, MaxLength(255)]",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": 255,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[assignment_overrides__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignment_overrides__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "active",
+            "deleted"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "assignment_override_students": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "user_id": {
+          "published_type": "[users](#dap_schemas.canvas.users)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "users",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "assignment_id": {
+          "published_type": "[assignments](#dap_schemas.canvas.assignments) | None",
+          "type": "int64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": "assignments",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "assignment_override_id": {
+          "published_type": "[assignment_overrides](#dap_schemas.canvas.assignment_overrides)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "assignment_overrides",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[assignment_override_students__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.assignment_override_students__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "active",
+            "deleted"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "submissions": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "user_id": {
+          "published_type": "[users](#dap_schemas.canvas.users)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "users",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "assignment_id": {
+          "published_type": "[assignments](#dap_schemas.canvas.assignments)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "assignments",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "submitted_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "graded_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "score": {
+          "published_type": "float64 | None",
+          "type": "float64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "attempt": {
+          "published_type": "int32 | None",
+          "type": "int32",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "excused": {
+          "published_type": "bool | None",
+          "type": "bool",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "submission_type": {
+          "published_type": "[submissions__submission_type](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.submissions__submission_type) | None",
+          "type": "string",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "basic_lti_launch",
+            "discussion_topic",
+            "external_tool",
+            "media_recording",
+            "online_file_upload",
+            "online_quiz",
+            "online_text_entry",
+            "online_upload",
+            "online_url",
+            "student_annotation"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "created_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "workflow_state": {
+          "published_type": "[submissions__workflow_state](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/HxvoImWoy0bxSacLiOmu#dap_schemas.canvas.submissions__workflow_state)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "__dap_unspecified__",
+            "graded",
+            "pending_review",
+            "submitted",
+            "unsubmitted",
+            "deleted"
+          ],
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "scores": {
+      "namespace": "canvas",
+      "columns": {
+        "id": {
+          "published_type": "int64",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "enrollment_id": {
+          "published_type": "[enrollments](#dap_schemas.canvas.enrollments)",
+          "type": "int64",
+          "nullable": false,
+          "primary_key": false,
+          "reference": "enrollments",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "course_score": {
+          "published_type": "bool",
+          "type": "bool",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "current_score": {
+          "published_type": "float64 | None",
+          "type": "float64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "final_score": {
+          "published_type": "float64 | None",
+          "type": "float64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "updated_at": {
+          "published_type": "datetime | None",
+          "type": "datetime",
+          "nullable": true,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        }
+      }
+    },
+    "web_logs": {
+      "namespace": "canvas_logs",
+      "columns": {
+        "id": {
+          "published_type": "UUID",
+          "type": "string",
+          "nullable": false,
+          "primary_key": true,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": "uuid"
+        },
+        "timestamp": {
+          "published_type": "datetime",
+          "type": "datetime",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "user_id": {
+          "published_type": "[canvas.users](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/zdvm4Hvd7IRbvpXEbjzE#dap_schemas.canvas.users) | None",
+          "type": "int64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": "users",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "course_id": {
+          "published_type": "[canvas.courses](https://developerdocs.instructure.com/services/dap/dataset/dataset-namespaces/pages/zdvm4Hvd7IRbvpXEbjzE#dap_schemas.canvas.courses) | None",
+          "type": "int64",
+          "nullable": true,
+          "primary_key": false,
+          "reference": "courses",
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "url": {
+          "published_type": "str",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "http_method": {
+          "published_type": "[HTTPMethod](#dap_schemas.canvas_logs.httpmethod)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "CONNECT",
+            "DELETE",
+            "GET",
+            "HEAD",
+            "OPTIONS",
+            "PATCH",
+            "POST",
+            "PUT",
+            "TRACE",
+            "SEARCH",
+            "PROPFIND",
+            "LOCK",
+            "REPORT",
+            "PURGE",
+            "MKCOL",
+            "PROPPATCH",
+            "CHECKOUT",
+            "UNLOCK",
+            "MERGE",
+            "NOTIFY",
+            "MOVE",
+            "COPY",
+            "UNSUBSCRIBE",
+            "MKACTIVITY",
+            "SUBSCRIBE",
+            "ACL"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "http_status": {
+          "published_type": "[HTTPStatus](#dap_schemas.canvas_logs.httpstatus)",
+          "type": "int32",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            100,
+            101,
+            102,
+            103,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            226,
+            300,
+            301,
+            302,
+            303,
+            304,
+            305,
+            307,
+            308,
+            400,
+            401,
+            402,
+            403,
+            404,
+            405,
+            406,
+            407,
+            408,
+            409,
+            410,
+            411,
+            412,
+            413,
+            414,
+            415,
+            416,
+            417,
+            418,
+            421,
+            422,
+            423,
+            424,
+            425,
+            426,
+            428,
+            429,
+            431,
+            451,
+            500,
+            501,
+            502,
+            503,
+            504,
+            505,
+            506,
+            507,
+            508,
+            510,
+            511
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "http_version": {
+          "published_type": "[HTTPVersion](#dap_schemas.canvas_logs.httpversion)",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": [
+            "0.9",
+            "1.0",
+            "1.1",
+            "2.0"
+          ],
+          "max_length": null,
+          "format": null
+        },
+        "remote_ip": {
+          "published_type": "IPv4Address | IPv6Address",
+          "type": "string",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": "ip"
+        },
+        "interaction_micros": {
+          "published_type": "int32",
+          "type": "int32",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        },
+        "participated": {
+          "published_type": "bool",
+          "type": "bool",
+          "nullable": false,
+          "primary_key": false,
+          "reference": null,
+          "enum": null,
+          "max_length": null,
+          "format": null
+        }
+      }
+    }
+  },
+  "handling": {
+    "timestamps": "UTC, microsecond precision; Spark timestamp in UTC session",
+    "int64": "pandas nullable Int64; Spark LongType, never converted via float",
+    "float64": "IEEE float64 as published, not silently converted to decimal",
+    "uuid_ip": "Canonical validated string because Spark has no native UUID/IP scalar",
+    "arrays": "Native array<string>, preserving allowed enum values",
+    "strings": "No truncation. Published MaxLength validated; unbounded fields remain unbounded.",
+    "withdrawal": "sim_support.course_withdrawal_events is supplemental, authoritative only inside this synthetic demonstration",
+    "history": "sim_history.<table>_revisions adds effective_at, recorded_at, revision; not official Canvas columns",
+    "gradebook": "sim_support.gradebook_qualification certifies finished course totals; scores.final_score alone is not a label",
+    "logs": "Includes categorized anonymous/external requests. Real CD2 logs retain only 30 days; historical use needs archive.",
+    "overrides": "ADHOC student overrides only; set_id null; mapping through assignment_override_students",
+    "grades": "Point-weighted totals; no assignment-group weighting, dropped scores or grading periods",
+    "current_term": "Official source and history stop at current cutoff, no term-five future truth is persisted"
+  }
+}

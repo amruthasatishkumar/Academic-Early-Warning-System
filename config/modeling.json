@@ -1,0 +1,12 @@
+{
+  "workflow_version": "four-outcome-calibrated-1",
+  "seed": 271828,
+  "calibration_fraction_of_term3": 0.5,
+  "calibration_method": "sigmoid",
+  "class_weight_candidates": [null, "balanced"],
+  "logistic_C": [0.3, 1.0],
+  "max_training_rows": 100000,
+  "selection_criterion": "Highest decision-fold macro one-vs-rest average precision, then lowest multiclass log loss; logistic candidates only.",
+  "reevaluate_term4": false,
+  "registration_approved": false
+}

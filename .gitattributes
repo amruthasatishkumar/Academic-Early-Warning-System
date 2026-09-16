@@ -1,0 +1,10 @@
+* text=auto
+*.zip binary
+*.py text eol=lf
+*.json text eol=lf
+*.ipynb text eol=lf
+*.rst text eol=lf
+*.txt text eol=lf
+*.svg text eol=lf
+*.excalidraw text eol=lf
+*.png binary
