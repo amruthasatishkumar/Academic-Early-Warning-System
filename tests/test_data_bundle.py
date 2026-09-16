@@ -1,8 +1,10 @@
 import base64
 import copy
+import fnmatch
 import io
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -61,6 +63,37 @@ class DataBundleTests(unittest.TestCase):
                         if pa.types.is_timestamp(field.type):
                             self.assertEqual(column["numpy_type"], "datetime64[us]", f"{name}:{field.name}:pandas")
         self.assertGreater(timestamp_count, 0)
+
+    def test_readme_maps_every_parquet_file_to_its_destination(self):
+        readme = (ROOT / "README.rst").read_text()
+        rows = re.findall(
+            r"^   \* - ``([^`\n]+\.parquet)``\n     - ``(\w+)``\n     - ``(\w+)``$",
+            readme, flags=re.MULTILINE,
+        )
+        self.assertTrue(rows, "README must include the Parquet destination table.")
+        features = {
+            "features/current.parquet": "silver.current_weekly_features",
+            "features/historical.parquet": "silver.historical_weekly_features",
+        }
+        expected = {
+            item["path"]: item.get("table", features.get(item["path"]))
+            for item in self.bundle.manifest["members"] if item["path"].endswith(".parquet")
+        }
+        covered = {}
+        destinations = set()
+        for pattern, schema, table in rows:
+            target = f"{schema}.{table}"
+            self.assertNotIn(target, destinations, f"Duplicate destination: {target}")
+            destinations.add(target)
+            matching = [name for name in expected if fnmatch.fnmatchcase(name, pattern.replace("\\", "/"))]
+            self.assertTrue(matching, f"No shipped files match {pattern}")
+            for name in matching:
+                self.assertNotIn(name, covered, f"File mapped more than once: {name}")
+                self.assertEqual(target, expected[name], f"Wrong destination for {name}")
+                covered[name] = target
+        self.assertEqual(covered, expected)
+        self.assertIn(f"{len(expected)} Parquet files", readme)
+        self.assertIn(f"**{len(destinations)} input tables**", readme)
 
     def test_upload_path_does_not_generate_records(self):
         with tempfile.TemporaryDirectory() as temporary, patch("aews.fabric.prepare", side_effect=AssertionError("No generation")):

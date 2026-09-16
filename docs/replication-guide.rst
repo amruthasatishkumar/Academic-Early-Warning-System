@@ -15,6 +15,12 @@ Extract the downloaded repository ZIP first. Keep the simulated-data ZIP inside
 table-loading section is advanced data inspection only, not a replacement
 for the model replication workflow.
 
+For manual inspection, use the root README's
+`Parquet file-to-table names <../README.rst#parquet-file-to-table-names>`_
+table. It maps all 115 Parquet files to 27 input tables with separate
+**Schema** and **New table name** values. Keep filenames unchanged and load
+all parts from a single table folder together, not as separate tables.
+
 This guide adds local development instructions and details about publication,
 preservation and adapting the target environment.
 

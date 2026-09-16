@@ -184,8 +184,9 @@ model training/publication workflow.
 
 3. Upload the selected extracted files or table folder under Lakehouse
    **Files**, preserving a separate folder for each table. Select that
-   table's Parquet file or folder and choose **Load to tables**, select
-   **Parquet**, and give the destination table a meaningful name.
+   table's Parquet file or folder and choose **Load to tables > New table**.
+   Select **Parquet** if prompted. Use the exact **Schema** and **New table
+   name** from `Parquet file-to-table names`_ below, not an arbitrary name.
    If several ``part-*.parquet`` files belong to one table, load all of those
    parts together, not just the first term.
 
@@ -206,6 +207,126 @@ All timestamp columns in the corrected bundle are stored as Parquet
 **microseconds**, which avoids the unsupported ``TIMESTAMP(NANOS,true)``
 encoding. Keep current data and current notebooks together so their checksums
 match; do not recompress the data ZIP for the automated path.
+
+Parquet file-to-table names
+---------------------------
+
+**These are destination table names, not instructions to rename the files.**
+Keep the extracted filenames and table folders unchanged. Paths below are
+relative to the extracted simulated-data folder. The 115 Parquet files map
+to **27 input tables**; each row below is one table.
+
+In a schema-enabled Lakehouse, create the schema under **Tables** if it does
+not exist, then select it in the load dialog's **Schema** field. Enter only
+the last column in **New table name**. For example, for
+``features\current.parquet``, select schema ``silver`` and enter
+``current_weekly_features``. The result is
+``silver.current_weekly_features``; do not enter that dotted name as the
+table name or leave the schema as ``dbo`` when matching this repository.
+
+``part-*.parquet`` means **all five files, part-01.parquet through
+part-05.parquet, in that one table folder**. Upload that folder with its
+parts and load the folder once into the named table. Do not create a table
+per part, flatten files from different folders, or overwrite the table
+repeatedly with individual parts. The three ``part-00.parquet`` rows below
+each contain just one file.
+
+.. list-table:: Parquet files and destination Delta tables
+   :header-rows: 1
+   :widths: 60 15 25
+
+   * - Parquet file(s) to load together
+     - Schema
+     - New table name
+   * - ``features\current.parquet``
+     - ``silver``
+     - ``current_weekly_features``
+   * - ``features\historical.parquet``
+     - ``silver``
+     - ``historical_weekly_features``
+   * - ``source_parquet\canvas\accounts\part-00.parquet``
+     - ``canvas``
+     - ``accounts``
+   * - ``source_parquet\canvas\assignment_groups\part-*.parquet``
+     - ``canvas``
+     - ``assignment_groups``
+   * - ``source_parquet\canvas\assignment_override_students\part-*.parquet``
+     - ``canvas``
+     - ``assignment_override_students``
+   * - ``source_parquet\canvas\assignment_overrides\part-*.parquet``
+     - ``canvas``
+     - ``assignment_overrides``
+   * - ``source_parquet\canvas\assignments\part-*.parquet``
+     - ``canvas``
+     - ``assignments``
+   * - ``source_parquet\canvas\course_sections\part-*.parquet``
+     - ``canvas``
+     - ``course_sections``
+   * - ``source_parquet\canvas\courses\part-*.parquet``
+     - ``canvas``
+     - ``courses``
+   * - ``source_parquet\canvas\enrollment_terms\part-00.parquet``
+     - ``canvas``
+     - ``enrollment_terms``
+   * - ``source_parquet\canvas\enrollments\part-*.parquet``
+     - ``canvas``
+     - ``enrollments``
+   * - ``source_parquet\canvas\scores\part-*.parquet``
+     - ``canvas``
+     - ``scores``
+   * - ``source_parquet\canvas\submissions\part-*.parquet``
+     - ``canvas``
+     - ``submissions``
+   * - ``source_parquet\canvas\users\part-00.parquet``
+     - ``canvas``
+     - ``users``
+   * - ``source_parquet\canvas_logs\web_logs\part-*.parquet``
+     - ``canvas_logs``
+     - ``web_logs``
+   * - ``source_parquet\sim_history\assignment_groups_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``assignment_groups_revisions``
+   * - ``source_parquet\sim_history\assignment_override_students_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``assignment_override_students_revisions``
+   * - ``source_parquet\sim_history\assignment_overrides_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``assignment_overrides_revisions``
+   * - ``source_parquet\sim_history\assignments_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``assignments_revisions``
+   * - ``source_parquet\sim_history\course_sections_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``course_sections_revisions``
+   * - ``source_parquet\sim_history\courses_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``courses_revisions``
+   * - ``source_parquet\sim_history\enrollments_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``enrollments_revisions``
+   * - ``source_parquet\sim_history\scores_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``scores_revisions``
+   * - ``source_parquet\sim_history\submissions_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``submissions_revisions``
+   * - ``source_parquet\sim_history\web_logs_revisions\part-*.parquet``
+     - ``sim_history``
+     - ``web_logs_revisions``
+   * - ``source_parquet\sim_support\course_withdrawal_events\part-*.parquet``
+     - ``sim_support``
+     - ``course_withdrawal_events``
+   * - ``source_parquet\sim_support\gradebook_qualification\part-*.parquet``
+     - ``sim_support``
+     - ``gradebook_qualification``
+
+``manifest.json``, ``summary.json`` and ``bundle-info.json`` are metadata,
+not tables. There are no input Parquet files for
+``gold.student_course_predictions``, ``gold.prediction_explanations``,
+``gold.model_evaluation`` or ``gold.data_quality_summary``. The first notebook
+creates those outputs after training and scoring; do not create empty tables
+for them. Correct manual table names alone do not replace the notebook
+publication workflow or its required ZIP upload.
 
 What it demonstrates
 --------------------

@@ -25,7 +25,11 @@ no table name is needed when uploading the file.
 Advanced manual inspection only (skip for notebook replication):
 1. Extract this simulated-data ZIP on your computer using Extract All.
 2. Upload one table folder (with all its part-*.parquet files) to Lakehouse
-   Files, then select that folder/file, Load to tables, and Parquet.
+   Files, then select that folder/file and Load to tables > New table.
+   Choose Parquet if prompted. Use the repository README.rst section
+   "Parquet file-to-table names" for the exact Schema and New table name.
+   Keep the Parquet filenames unchanged; the mapping names the destination
+   tables, not replacement filenames. It covers all 115 files in 27 tables.
 3. Never combine different source-table folders into one table. Load
    features/historical.parquet and features/current.parquet separately.
    manifest.json and summary.json are metadata, not Parquet tables.
