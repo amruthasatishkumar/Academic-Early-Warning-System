@@ -80,10 +80,7 @@ def validate_session(spark, config, *, require_model=True):
     if require_model:
         importlib.import_module("mlflow.sklearn")
     delta_version = _delta_version(spark)
-    expected_schema = f"{config['intended_workspace']}.{config['intended_lakehouse']}.dbo"
-    namespaces = spark.sql("SHOW SCHEMAS").collect()
-    if not any(str(value).casefold() == expected_schema.casefold() for row in namespaces for value in row):
-        raise RuntimeError("The exact workspace.Lakehouse.dbo namespace is not present.")
+    # Probe the configured namespace directly; SHOW SCHEMAS name formatting varies by catalog.
     spark.sql("SHOW TABLES IN " + qualified(config, "dbo")).collect()
     root = Path("/") / "lakehouse" / "default" / "Files"
     if not root.is_dir():

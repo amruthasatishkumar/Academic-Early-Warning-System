@@ -20,8 +20,7 @@ class RuntimeTests(unittest.TestCase):
             "defaultLakehouseWorkspaceName": self.config["intended_workspace"],
         }
         self.spark = Mock(version="3.5.5")
-        self.spark.sql.return_value.collect.return_value = [
-            ("Academic Early Warning System.academic_early_warning.dbo",)]
+        self.spark.sql.return_value.collect.return_value = []
         self.versions = {"numpy": "1.26.4", "pandas": "2.1.4",
                          "scikit-learn": "1.2.2", "pyarrow": "14.0.2",
                          "mlflow": "2.12.2", "delta-spark": "3.2.0"}
@@ -86,8 +85,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertIsNone(observed["delta"])
         self.assertNotIn("mlflow", observed)
         self.assertFalse(any(call.args[0].startswith("mlflow") for call in imports.call_args_list))
-        self.spark.sql.assert_any_call("SHOW SCHEMAS")
-        self.spark.sql.assert_any_call("SHOW TABLES IN `academic_early_warning`.`dbo`")
+        self.spark.sql.assert_called_once_with("SHOW TABLES IN `academic_early_warning`.`dbo`")
 
     def test_missing_delta_python_support_is_not_ignored(self):
         self.missing_module = "delta.tables"
@@ -145,12 +143,29 @@ class RuntimeTests(unittest.TestCase):
             self.run_preflight(require_model=False)
 
     def test_catalog_and_runtime_guards_remain_enabled(self):
-        self.spark.sql.return_value.collect.return_value = [("dbo",)]
-        with self.assertRaisesRegex(RuntimeError, "exact workspace.Lakehouse.dbo"):
+        self.spark.sql.return_value.collect.side_effect = RuntimeError("Schema does not exist or is inaccessible")
+        with self.assertRaisesRegex(RuntimeError, "Schema does not exist or is inaccessible"):
             self.run_preflight(require_model=False)
+        self.spark.sql.assert_called_once_with("SHOW TABLES IN `academic_early_warning`.`dbo`")
         self.versions["pyarrow"] = "1.0.0"
         with self.assertRaisesRegex(RuntimeError, "Expected pyarrow"):
             self.run_preflight(require_model=False)
+
+    def test_empty_configured_schema_is_valid_without_enumerating_schema_names(self):
+        for require_model in (False, True):
+            with self.subTest(require_model=require_model):
+                self.spark.sql.reset_mock()
+                self.spark.sql.return_value.collect.reset_mock()
+
+                def only_targeted_query(query):
+                    if query != "SHOW TABLES IN `academic_early_warning`.`dbo`":
+                        raise AssertionError("Do not infer schema identity from display names.")
+                    return Mock(collect=Mock(return_value=[]))
+
+                self.spark.sql.side_effect = only_targeted_query
+                (root, _), _, _ = self.run_preflight(require_model=require_model)
+                self.assertEqual(root, Path("/lakehouse/default/Files"))
+                self.spark.sql.assert_called_once_with("SHOW TABLES IN `academic_early_warning`.`dbo`")
 
     def test_import_explicitly_selects_table_only_preflight(self):
         with patch("aews.table_import.validate_session", side_effect=RuntimeError("stop before data")) as preflight:

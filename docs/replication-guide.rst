@@ -286,6 +286,12 @@ Custom names
 Troubleshooting
 ---------------
 
+* **The exact workspace.Lakehouse.dbo namespace is not present:** an older
+  notebook incorrectly required a particular ``SHOW SCHEMAS`` display format.
+  Use the updated notebooks, which check the configured Lakehouse's ``dbo``
+  schema directly with ``SHOW TABLES IN`` after validating the session target.
+  No table needs to exist yet. Missing schemas and access errors still stop
+  the run; do not remove the target checks or recreate your data.
 * **PackageNotFoundError for mlflow or delta-spark in notebook 00:** import the
   updated loader and rerun all cells. It does not require MLflow and checks
   Fabric-provided Delta classes without assuming pip package metadata exists.
