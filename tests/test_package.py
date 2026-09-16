@@ -256,6 +256,23 @@ class PackageTests(unittest.TestCase):
         self.assertEqual({(schema, table) for _, schema, table in entries}, expected)
         self.assertEqual(sum(5 if "part-*" in path else 1 for path, _, _ in entries), 115)
 
+    def test_readme_keeps_short_actionable_steps_before_reference_material(self):
+        text = (ROOT / "README.rst").read_text()
+        steps = text.split("Stuck?\n", 1)[0]
+        headings = re.findall(r"^([1-6])\. .+\n-+$", steps, flags=re.MULTILINE)
+        self.assertEqual(headings, list("123456"))
+        self.assertLessEqual(len(steps.split()), 500)
+        self.assertGreaterEqual(len(re.findall(r"^\* ", steps, flags=re.MULTILINE)), 20)
+        self.assertIn("Only need the tables? Stop here.", steps)
+        self.assertIn("RUN_MODE = 'validate'", steps)
+        self.assertIn("RUN_MODE = 'publish'", steps)
+        self.assertLess(steps.index("tables_loaded"), steps.index("publication_completed"))
+        self.assertIn("docs/replication-guide.rst#troubleshooting", text)
+        self.assertIn("docs/replication-guide.rst#custom-names", text)
+        guide = (ROOT / "docs" / "replication-guide.rst").read_text()
+        self.assertIn("Troubleshooting\n", guide)
+        self.assertIn("Custom names\n", guide)
+
     def test_explanation_controls_prefill_from_the_same_prediction(self):
         import pandas as pd
         records = pd.DataFrame({

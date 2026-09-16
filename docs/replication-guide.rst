@@ -251,6 +251,62 @@ tables again before writing.
 Read-only exploration still consumes compute and loads a trusted serialized
 MLflow model. It does not modify tables, Files, model registry or predictions.
 
+Custom names
+------------
+
+* In block 3 of each notebook you use, edit the ``SOURCE_CONFIG`` values for
+  ``intended_workspace``, ``intended_lakehouse`` and ``experiment_name``.
+  Keep the names consistent across notebooks and attach the correct default
+  Lakehouse. Set ``SOURCE_FOLDER`` before its derived path is initialized.
+* Alternatively, edit ``config/simulation.json`` locally and rebuild all three
+  notebooks with ``python tools\build_notebooks.py`` before importing them.
+  Editing configuration files alone does not change an imported notebook.
+* Do not bypass target or runtime guards. Restart the notebook session after
+  changing its default Lakehouse.
+
+Troubleshooting
+---------------
+
+* **Folder not found or missing manifest:** set ``SOURCE_FOLDER`` to the exact
+  uploaded root, including ``-fixed`` if present. Check for double nesting.
+  Its direct children must include ``source_parquet``, ``features``,
+  ``manifest.json`` and ``summary.json``.
+* **Existing table mismatch in notebook 00:** it stops before creating new
+  tables. Review the conflict or use a separate empty development Lakehouse
+  with matching configuration. Do not delete data to bypass the guard.
+* **TIMESTAMP(NANOS,true):** use the corrected data and matching notebooks from
+  the same repository revision. Older feature files used incompatible timestamp
+  encoding. Selecting Parquet in the UI does not convert that encoding.
+* **Checksum mismatch:** keep all extracted files unchanged and use the data
+  shipped with your notebooks. Do not recompress the ZIP alternative. After a
+  deliberate dataset rebuild, rebuild all notebooks so their checksums match.
+* **ZIP not found (ZIP alternative):** upload the inner dataset ZIP to
+  ``Files/uploads``, not the outer repository ZIP. Names are case-sensitive.
+* **Target mismatch:** use `Custom names`_ and attach the configured Lakehouse
+  as default. Restart the session after changing its default Lakehouse.
+* **Runtime mismatch:** choose Runtime 1.3 and review the reported package
+  versions. Do not bypass guards or install packages mid-session.
+* **No current publication:** finish notebook 01 in publish mode before using
+  notebook 02. ``tables_loaded`` only confirms the input tables.
+* **Paused or throttled capacity:** resume paused capacity according to your
+  policy, or wait for existing work to finish. Do not start concurrent copies.
+* **Poor model metrics:** preserve the finding. Synthetic results are
+  illustrative, not institutional performance guarantees.
+
+Model artifacts and cost controls
+---------------------------------
+
+* Only load the trusted workspace's own MLflow model artifacts. Model loading
+  deserializes code; never point the reader at an untrusted model.
+* Publication is not a multi-table transaction. A failed run can leave partial
+  stable-table updates; preserve the previous manifest and immutable snapshots.
+* No automatic locking, rollback, archive retention, budget alerts, scheduling
+  or capacity pause/resume is supplied. Stop idle sessions and apply your own
+  approved cost controls. Retained data and storage can continue to incur charges.
+* Review ``LICENSE_NOTICE.txt`` before redistribution. No open-source license
+  has been selected. Exclude outputs, environments, caches and credentials when
+  sharing; include the version-matched synthetic input ZIP.
+
 Public product references
 -------------------------
 
