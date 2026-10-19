@@ -1,6 +1,48 @@
 Academic Early Warning System
 =============================
 
+An end-to-end **Microsoft Fabric** accelerator that predicts each student's
+course outcome (**Excellent, Pass, Fail or Withdrawn**) from learning-management
+system activity, and explains every prediction, so advisors can step in early.
+
+It ships with a fixed-seed simulator of Canvas-style LMS data, so the whole
+pipeline runs without any real student records.
+
+.. image:: assets/academic-early-warning-system.png
+   :alt: Architecture: simulated Canvas data, Lakehouse tables, weekly features, calibrated model, predictions and explanations
+
+What it does
+------------
+
+* **Ingests** 27 LMS source tables (courses, enrollments, submissions, scores,
+  web logs and their revision history) into a schema-enabled Fabric Lakehouse.
+* **Builds time-aware weekly features** (due work, completion, late and excused
+  work, grade level and trend, activity change) using only data available at
+  each checkpoint, so there is no look-ahead leakage.
+* **Trains and calibrates** a four-class logistic model, compares it with a
+  prevalence baseline, and publishes exactly one model with MLflow.
+* **Explains** each prediction with per-feature contributions in notebook 02.
+* **Guards the data**: validation mode before publishing, refusal to overwrite
+  conflicting tables, and immutable snapshots of what was published.
+
+See the `model card <docs/model-card.rst>`_ for intended use and limitations,
+and `adapting real data <docs/adapting-real-data.rst>`_ to point it at your own LMS.
+
+Repository layout
+-----------------
+
+* ``aews/``: the Python package (simulation, features, modeling, explanations, Fabric I/O)
+* ``notebooks/``: 00 load tables, 01 build and publish, 02 explore and explain
+* ``sample-data/``: the simulated dataset (ZIP)
+* ``config/``: source contract, simulation and modeling settings
+* ``tests/``: unit tests for data import, features, model and explanations
+* ``tools/``: build the data bundle and notebooks, run locally, validate data
+
+Quickstart
+----------
+
+The steps below take you from download to predictions.
+
 Upload the included fictional data, create Lakehouse tables, then optionally
 train a model for **Excellent, Pass, Fail and Withdrawn**.
 
@@ -109,7 +151,7 @@ References
   `Editable diagram <assets/academic-early-warning-system.excalidraw>`_.
 * `Model limitations <docs/model-card.rst>`_ |
   `Adapting real data <docs/adapting-real-data.rst>`_ |
-  `License notice <LICENSE_NOTICE.txt>`_.
+  `License <LICENSE>`_.
 
 **Synthetic demonstration only, not a production system or institutional
 accuracy claim.** The new folder workflow has not been run end to end in Fabric.
@@ -214,3 +256,21 @@ The 115 Parquet files map to **27 input tables**.
    * - ``source_parquet\sim_support\gradebook_qualification\part-*.parquet``
      - ``sim_support``
      - ``gradebook_qualification``
+
+Development
+-----------
+
+Tests run with the pinned versions in ``requirements.txt`` (Python 3.10 or 3.11)::
+
+    pip install -r requirements.txt pytest
+    python -m pytest
+
+Newer scikit-learn (1.6+) and MLflow releases change APIs this project uses
+(for example ``CalibratedClassifierCV(cv="prefit")``), so stay on the pins.
+
+Disclaimer and licence
+----------------------
+
+This is an experimental synthetic-data demonstration, not a supported production
+system or an official Microsoft offering. Product names identify interoperability
+targets, not endorsement. Released under the `MIT License <LICENSE>`_.

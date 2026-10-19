@@ -337,9 +337,8 @@ Model artifacts and cost controls
 * No automatic locking, rollback, archive retention, budget alerts, scheduling
   or capacity pause/resume is supplied. Stop idle sessions and apply your own
   approved cost controls. Retained data and storage can continue to incur charges.
-* Review ``LICENSE_NOTICE.txt`` before redistribution. No open-source license
-  has been selected. Exclude outputs, environments, caches and credentials when
-  sharing; include the version-matched synthetic input ZIP.
+* The project is MIT-licensed (see ``LICENSE``). Exclude outputs, environments,
+  caches and credentials when sharing; include the version-matched synthetic input ZIP.
 
 Public product references
 -------------------------

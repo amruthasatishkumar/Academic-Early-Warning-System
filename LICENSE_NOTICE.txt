@@ -1,8 +1,0 @@
-No open-source license has been selected for this starter repository.
-The owner must apply an organization-approved license and complete the
-applicable release, privacy, security and third-party review before public
-distribution. This notice grants no license.
-
-This is an experimental synthetic-data demonstration, not a supported
-production system or an approved Microsoft offering. Product names identify
-interoperability targets, not endorsement or a support commitment.
